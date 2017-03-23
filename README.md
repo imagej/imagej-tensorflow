@@ -1,5 +1,7 @@
 # Analysis in [ImageJ](https://imagej.net/)/[Fiji](http://fiji.sc) using [TensorFlow](https://www.tensorflow.org) models
 
+[![Build Status](https://travis-ci.org/asimshankar/imagej-tensorflow.svg)](https://travis-ci.org/asimshankar/imagej-tensorflow)
+
 Some experimentation with creating [ImageJ plugins](https://imagej.net/Writing_plugins)
 that use [TensorFlow](https://www.tensorflow.org) image models.
 
