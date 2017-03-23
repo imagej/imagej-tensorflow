@@ -19,10 +19,11 @@ into a command plugin to label an opened image.
    ```sh
    # Set this to where Fiji.app is installed
    FIJI_APP_PATH=/Users/me/Desktop/Fiji.app
-   git checkout https://github.com/asimshankar/imagej-tensorflow
+   git clone https://github.com/asimshankar/imagej-tensorflow
    cd imagej-tensorflow
    mvn -Dimagej.app.directory="${FIJI_APP_PATH}"
    ```
+Last step requires [Maven](https://maven.apache.org/install.html) be installed.
 
 3. Start Fiji and explore the `TensorFlow Demo` menu.
 
