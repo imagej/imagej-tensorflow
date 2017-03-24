@@ -283,9 +283,17 @@ public class LabelImage implements Command {
 		private final Graph g;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		final ImageJ ij = new ImageJ();
 		ij.launch(args);
-		ij.command().run(LabelImage.class, true);
+
+		// Open an image and display it.
+		final String imagePath = "http://samples.fiji.sc/new-lenna.jpg";
+		final Object dataset = ij.io().open(imagePath);
+		ij.ui().show(dataset);
+
+		// Launch the "Label Images" command with some sensible defaults.
+		ij.command().run(LabelImage.class, true, //
+			"inputImage", dataset);
 	}
 }
