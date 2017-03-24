@@ -7,8 +7,10 @@ import java.nio.FloatBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
@@ -52,11 +54,14 @@ public class LabelImage implements Command {
 	@Parameter
 	private Dataset inputImage;
 
+	@Parameter(label = "Min probability (%)", min = "0", max = "100")
+	private double minPercent = 1;
+
 	@Parameter(type = ItemIO.OUTPUT)
 	private Img<FloatType> outputImage;
 
 	@Parameter(type = ItemIO.OUTPUT)
-	private String outputLabel;
+	private String outputLabels;
 
 	@Override
 	public void run() {
@@ -78,9 +83,34 @@ public class LabelImage implements Command {
 				outputImage = toImg(image);
 				final float[] labelProbabilities = executeInceptionGraph(graphDef,
 					image);
-				final int bestLabelIdx = maxIndex(labelProbabilities);
-				outputLabel = String.format("%s (%.2f%% likely)", labels.get(
-					bestLabelIdx), labelProbabilities[bestLabelIdx] * 100f);
+
+				// Sort labels by probability.
+				final int labelCount = Math.min(labelProbabilities.length, labels
+					.size());
+				final Integer[] labelIndices = IntStream.range(0, labelCount).boxed()
+					.toArray(Integer[]::new);
+				Arrays.sort(labelIndices, 0, labelCount, new Comparator<Integer>() {
+
+					@Override
+					public int compare(final Integer i1, final Integer i2) {
+						final float p1 = labelProbabilities[i1];
+						final float p2 = labelProbabilities[i2];
+						return p1 == p2 ? 0 : p1 > p2 ? -1 : 1;
+					}
+				});
+
+				// Output labels above the probability threshold.
+				final double cutoff = minPercent / 100; // % -> probability
+				final StringBuilder sb = new StringBuilder();
+				for (int i = 0; i < labelCount; i++) {
+					final int index = labelIndices[i];
+					final double p = labelProbabilities[index];
+					if (p < cutoff) break;
+
+					sb.append(String.format("%s (%.2f%% likely)\n", labels.get(index),
+						labelProbabilities[index] * 100f));
+				}
+				outputLabels = sb.toString();
 			}
 		}
 		catch (final Exception exc) {
@@ -220,16 +250,6 @@ public class LabelImage implements Command {
 				return result.copyTo(new float[1][nlabels])[0];
 			}
 		}
-	}
-
-	private static int maxIndex(final float[] probabilities) {
-		int best = 0;
-		for (int i = 1; i < probabilities.length; ++i) {
-			if (probabilities[i] > probabilities[best]) {
-				best = i;
-			}
-		}
-		return best;
 	}
 
 	// In the fullness of time, equivalents of the methods of this class should be
