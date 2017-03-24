@@ -23,7 +23,9 @@ into a command plugin to label an opened image.
    cd imagej-tensorflow
    mvn -Dimagej.app.directory="${FIJI_APP_PATH}"
    ```
-Last step requires [Maven](https://maven.apache.org/install.html) be installed.
+   (This requires [Maven](https://maven.apache.org/install.html) be installed.
+   Typically `brew install maven` on OS X, `apt-get install maven` on Ubuntu,
+   or [detailed instructions](https://maven.apache.org/install.html) otherwise).
 
 3. Start Fiji and explore the `TensorFlow Demo` menu.
 
