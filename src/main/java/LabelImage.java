@@ -1,27 +1,32 @@
-import io.scif.services.DatasetIOService;
-
 import java.io.BufferedReader;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.FloatBuffer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import net.imagej.Dataset;
 import net.imagej.ImageJ;
+import net.imagej.ImgPlus;
+import net.imglib2.Cursor;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImg;
+import net.imglib2.img.array.ArrayImgs;
+import net.imglib2.img.basictypeaccess.array.FloatArray;
+import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.Intervals;
 
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import org.tensorflow.DataType;
 import org.tensorflow.Graph;
 import org.tensorflow.Output;
 import org.tensorflow.Session;
@@ -41,14 +46,13 @@ import org.tensorflow.Tensor;
 public class LabelImage implements Command {
 
 	@Parameter
-	private DatasetIOService datasetIOService;
-	@Parameter
 	private LogService log;
+
 	@Parameter
-	private File inputFile;
+	private ImgPlus<FloatType> inputImage;
 
 	@Parameter(type = ItemIO.OUTPUT)
-	private Dataset outputImage;
+	private Img<FloatType> outputImage;
 
 	@Parameter(type = ItemIO.OUTPUT)
 	private String outputLabel;
@@ -56,18 +60,6 @@ public class LabelImage implements Command {
 	@Override
 	public void run() {
 		try {
-			final String filepath = inputFile.getAbsolutePath();
-			outputImage = datasetIOService.open(filepath);
-			// constructAndExecuteGraphToNormalizeImage() assumes a JPEG.
-			// Poor approximation of a check.
-			if (!filepath.toLowerCase().endsWith(".jpeg") && !filepath.toLowerCase()
-				.endsWith(".jpg"))
-			{
-				outputLabel = "ERROR: Can only label JPEG images";
-				return;
-			}
-
-			final byte[] imageBytes = loadJPEG(filepath);
 			// This is not efficient: Loading the model, the labels and constructing a
 			// graph to normalize the image on every call to run(). Fine for a
 			// proof-of-concept demo, but in any real implementation, model loading
@@ -77,15 +69,17 @@ public class LabelImage implements Command {
 			log.info("Loaded GraphDef of " + graphDef.length + " bytes and " + labels
 				.size() + " labels");
 
+			final Tensor fromImgLib = loadFromImgLib(inputImage);
+
 			try (Tensor image = constructAndExecuteGraphToNormalizeImage(
-				imageBytes))
+				fromImgLib))
 			{
+				outputImage = toImg(image);
 				final float[] labelProbabilities = executeInceptionGraph(graphDef,
 					image);
 				final int bestLabelIdx = maxIndex(labelProbabilities);
 				outputLabel = String.format("%s (%.2f%% likely)", labels.get(
 					bestLabelIdx), labelProbabilities[bestLabelIdx] * 100f);
-				log.info(filepath + " --> " + outputLabel);
 			}
 		}
 		catch (final Exception exc) {
@@ -93,19 +87,11 @@ public class LabelImage implements Command {
 		}
 	}
 
-	private byte[] loadJPEG(final String path) throws IOException {
-		final byte[] imageBytes = Files.readAllBytes(Paths.get(path));
-		// Can only handle JPEG images since
-		// constructAndExecuteGraphToNormalizeImage() assumes so. Check against some
-		// magic numbers for JPEG Perhaps check the magic number of the bytes?
-		return imageBytes;
-	}
-
 	private byte[] loadInceptionModelGraphDef() throws IOException {
 		final String path = Paths.get("tensorflow_models", "inception5h",
 			"tensorflow_inception_graph.pb").toString();
 		getClass().getClassLoader();
-		final int nbytes = ClassLoader.getResource(path).openConnection()
+		final int nbytes = ClassLoader.getSystemResource(path).openConnection()
 			.getContentLength();
 		final byte[] graphDef = new byte[nbytes];
 		log.info("Reading " + nbytes + " bytes of the TensorFlow inception model");
@@ -128,12 +114,55 @@ public class LabelImage implements Command {
 		}
 	}
 
+	private static Img<FloatType> toImg(final Tensor image) {
+		final float[] out = new float[image.numElements()];
+		final Img<FloatType> tmp = ArrayImgs.floats(out, image.shape());
+		image.writeTo(FloatBuffer.wrap(out));
+		return tmp;
+	}
+
+	private static Tensor loadFromImgLib(
+		final RandomAccessibleInterval<FloatType> image)
+	{
+		try (final Graph g = new Graph()) {
+			final GraphBuilder b = new GraphBuilder(g);
+			// TODO we can be way more efficient here...
+			final RandomAccess<FloatType> source = image.randomAccess();
+			final long[] dims = Intervals.dimensionsAsLongArray(image);
+			final long[] reshapedDims = new long[] { dims[1], dims[0], dims[2] };
+
+			final ArrayImg<FloatType, FloatArray> dest = ArrayImgs.floats(
+				reshapedDims);
+			final Cursor<FloatType> destCursor = dest.cursor();
+			for (int y = 0; y < dims[1]; y++) {
+				source.setPosition(y, 1);
+				for (int x = 0; x < dims[0]; x++) {
+					source.setPosition(x, 0);
+					for (int c = 0; c < dims[2]; c++) {
+						destCursor.fwd();
+						source.setPosition(c, 2);
+						destCursor.get().set(source.get());
+					}
+				}
+			}
+
+			// Since the graph is being constructed once per execution here, we can
+			// use a constant for the input image. If the graph were to be re-used for
+			// multiple input images, a placeholder would have been more appropriate.
+			final Output input = b.constant("input", dest.update(null)
+				.getCurrentStorageArray(), reshapedDims);
+			try (Session s = new Session(g)) {
+				return s.runner().fetch(input.op().name()).run().get(0);
+			}
+		}
+	}
+
 	// -----------------------------------------------------------------------------------------------------------------
 	// All the code below was essentially copied verbatim from:
 	// https://github.com/tensorflow/tensorflow/blob/e8f2aad0c0502fde74fc629f5b13f04d5d206700/tensorflow/java/src/main/java/org/tensorflow/examples/LabelImage.java
 	// -----------------------------------------------------------------------------------------------------------------
 	private static Tensor constructAndExecuteGraphToNormalizeImage(
-		final byte[] imageBytes)
+		final Tensor t)
 	{
 		try (Graph g = new Graph()) {
 			final GraphBuilder b = new GraphBuilder(g);
@@ -151,9 +180,11 @@ public class LabelImage implements Command {
 			// Since the graph is being constructed once per execution here, we can
 			// use a constant for the input image. If the graph were to be re-used for
 			// multiple input images, a placeholder would have been more appropriate.
-			final Output input = b.constant("input", imageBytes);
+			final Output input = g.opBuilder("Const", "input")//
+				.setAttr("dtype", t.dataType())//
+				.setAttr("value", t).build().output(0);
 			final Output output = b.div(b.sub(b.resizeBilinear(b.expandDims(//
-				b.cast(b.decodeJpeg(input, 3), DataType.FLOAT), //
+				input, //
 				b.constant("make_batch", 0)), //
 				b.constant("size", new int[] { H, W })), //
 				b.constant("mean", mean)), //
@@ -220,18 +251,17 @@ public class LabelImage implements Command {
 			return binaryOp("ExpandDims", input, dim);
 		}
 
-		Output cast(final Output value, final DataType dtype) {
-			return g.opBuilder("Cast", "Cast").addInput(value).setAttr("DstT", dtype)
-				.build().output(0);
-		}
-
-		Output decodeJpeg(final Output contents, final long channels) {
-			return g.opBuilder("DecodeJpeg", "DecodeJpeg").addInput(contents).setAttr(
-				"channels", channels).build().output(0);
-		}
-
 		Output constant(final String name, final Object value) {
 			try (Tensor t = Tensor.create(value)) {
+				return g.opBuilder("Const", name).setAttr("dtype", t.dataType())
+					.setAttr("value", t).build().output(0);
+			}
+		}
+
+		Output constant(final String name, final float[] value,
+			final long... shape)
+		{
+			try (Tensor t = Tensor.create(shape, FloatBuffer.wrap(value))) {
 				return g.opBuilder("Const", name).setAttr("dtype", t.dataType())
 					.setAttr("value", t).build().output(0);
 			}
