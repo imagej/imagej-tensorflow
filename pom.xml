@@ -21,6 +21,15 @@
   <url>https://github.com/asimshankar/imagej-tensorflow</url>
   <inceptionYear>2017</inceptionYear>
 
+  <properties>
+    <!-- This repository only contains samples. To keep the pom.xml
+         more focused, I've removed requirements (such as contributor,
+         developer, source code management) enforced by the maven-enforcer-plugin
+         for publishable plugins. -->
+    <enforcer.skip>true</enforcer.skip>
+    <exec.mainClass>LabelImage</exec.mainClass>
+  </properties>
+
   <repositories>
     <repository>
       <id>imagej.public</id>
@@ -37,19 +46,11 @@
     <dependency>
       <groupId>org.tensorflow</groupId>
       <artifactId>tensorflow</artifactId>
-      <version>1.1.0-rc0</version>
+      <version>1.1.0</version>
     </dependency>
   </dependencies>
   <build>
     <plugins>
-      <!-- This repository only contains samples. To keep the pom.xml
-           more focused, I've removed requirements (such as contributor,
-           developer, source code management) enforced by the maven-enforcer-plugin
-           for publishable plugins. -->
-      <plugin>
-          <artifactId>maven-enforcer-plugin</artifactId>
-          <configuration><skip>true</skip></configuration>
-      </plugin>
       <!-- Use the download-maven-plugin to package the model. -->
       <plugin>
         <groupId>com.googlecode.maven-download-plugin</groupId>

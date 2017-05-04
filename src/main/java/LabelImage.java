@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import net.imagej.Dataset;
+import net.imagej.ImageJ;
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
@@ -91,7 +92,7 @@ public class LabelImage implements Command {
     final String path =
         Paths.get("tensorflow_models", "inception5h", "tensorflow_inception_graph.pb").toString();
     int nbytes =
-        getClass().getClassLoader().getSystemResource(path).openConnection().getContentLength();
+        getClass().getClassLoader().getResource(path).openConnection().getContentLength();
     byte[] graphDef = new byte[nbytes];
     logService.info("Reading " + nbytes + " bytes of the TensorFlow inception model");
     try (DataInputStream is =
@@ -228,5 +229,11 @@ public class LabelImage implements Command {
     }
 
     private Graph g;
+  }
+
+  public static void main(String[] args) {
+    final ImageJ ij = new ImageJ();
+    ij.launch(args);
+    ij.command().run(LabelImage.class, true);
   }
 }

@@ -10,24 +10,17 @@ For example, the one plugin right now pacakges the
 in particular [its Java version](https://www.tensorflow.org/code/tensorflow/java/src/main/java/org/tensorflow/examples/LabelImage.java)
 into a command plugin to label an opened image.
 
-## Installation
+## Quickstart
 
-1. Download and install [Fiji](http://fiji.sc/) - an ImageJ distribution.
+```sh
+git clone https://github.com/asimshankar/imagej-tensorflow
+cd imagej-tensorflow
+mvn compile exec:java
+```
 
-2. Build and install the demo plugin:
-
-   ```sh
-   # Set this to where Fiji.app is installed
-   FIJI_APP_PATH=/Users/me/Desktop/Fiji.app
-   git clone https://github.com/asimshankar/imagej-tensorflow
-   cd imagej-tensorflow
-   mvn -Dimagej.app.directory="${FIJI_APP_PATH}"
-   ```
-   (This requires [Maven](https://maven.apache.org/install.html) be installed.
-   Typically `brew install maven` on OS X, `apt-get install maven` on Ubuntu,
-   or [detailed instructions](https://maven.apache.org/install.html) otherwise).
-
-3. Start Fiji and explore the `TensorFlow Demo` menu.
+This requires [Maven](https://maven.apache.org/install.html).  Typically `brew
+install maven` on OS X, `apt-get install maven` on Ubuntu, or [detailed
+instructions](https://maven.apache.org/install.html) otherwise.
 
 ## Caveats
 
