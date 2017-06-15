@@ -36,7 +36,8 @@ import org.tensorflow.Tensor;
  * "www.tensorflow.org/code/tensorflow/java/src/main/java/org/tensorflow/examples/LabelImage.java">
  * Java implementation</a>.
  */
-@Plugin(type = Command.class, menuPath = "TensorFlow Demos>Label Image")
+@Plugin(type = Command.class, menuPath = "TensorFlow Demos>Label Image",
+	headless = true)
 public class LabelImage implements Command {
 
 	@Parameter
