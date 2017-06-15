@@ -152,10 +152,12 @@ public class LabelImage implements Command {
 			// use a constant for the input image. If the graph were to be re-used for
 			// multiple input images, a placeholder would have been more appropriate.
 			final Output input = b.constant("input", imageBytes);
-			final Output output = b.div(b.sub(b.resizeBilinear(b.expandDims(b.cast(b
-				.decodeJpeg(input, 3), DataType.FLOAT), b.constant("make_batch", 0)), b
-					.constant("size", new int[] { H, W })), b.constant("mean", mean)), b
-						.constant("scale", scale));
+			final Output output = b.div(b.sub(b.resizeBilinear(b.expandDims(//
+				b.cast(b.decodeJpeg(input, 3), DataType.FLOAT), //
+				b.constant("make_batch", 0)), //
+				b.constant("size", new int[] { H, W })), //
+				b.constant("mean", mean)), //
+				b.constant("scale", scale));
 			try (Session s = new Session(g)) {
 				return s.runner().fetch(output.op().name()).run().get(0);
 			}
