@@ -68,10 +68,9 @@ public class LabelImage implements Command {
 
 			final byte[] imageBytes = loadJPEG(filepath);
 			// This is not efficient: Loading the model, the labels and constructing a
-			// graph to normalize
-			// the image on every call to run(). Fine for a proof-of-concept demo, but
-			// in any real
-			// implementation, model loading should be ammortized.
+			// graph to normalize the image on every call to run(). Fine for a
+			// proof-of-concept demo, but in any real implementation, model loading
+			// should be ammortized.
 			final byte[] graphDef = loadInceptionModelGraphDef();
 			final List<String> labels = loadInceptionLabels();
 			logService.info("Loaded GraphDef of " + graphDef.length + " bytes and " +
@@ -96,9 +95,8 @@ public class LabelImage implements Command {
 	private byte[] loadJPEG(final String path) throws IOException {
 		final byte[] imageBytes = Files.readAllBytes(Paths.get(path));
 		// Can only handle JPEG images since
-		// constructAndExecuteGraphToNormalizeImage() assumes so.
-		// Check against some magic numbers for JPEG
-		// Perhaps check the magic number of the bytes?
+		// constructAndExecuteGraphToNormalizeImage() assumes so. Check against some
+		// magic numbers for JPEG Perhaps check the magic number of the bytes?
 		return imageBytes;
 	}
 
@@ -144,17 +142,15 @@ public class LabelImage implements Command {
 			//
 			// - The model was trained with images scaled to 224x224 pixels.
 			// - The colors, represented as R, G, B in 1-byte each were converted to
-			// float using (value - Mean)/Scale.
+			//   float using (value - Mean)/Scale.
 			final int H = 224;
 			final int W = 224;
 			final float mean = 117f;
 			final float scale = 1f;
 
 			// Since the graph is being constructed once per execution here, we can
-			// use a constant for the
-			// input image. If the graph were to be re-used for multiple input images,
-			// a placeholder would
-			// have been more appropriate.
+			// use a constant for the input image. If the graph were to be re-used for
+			// multiple input images, a placeholder would have been more appropriate.
 			final Output input = b.constant("input", imageBytes);
 			final Output output = b.div(b.sub(b.resizeBilinear(b.expandDims(b.cast(b
 				.decodeJpeg(input, 3), DataType.FLOAT), b.constant("make_batch", 0)), b
@@ -198,10 +194,8 @@ public class LabelImage implements Command {
 	}
 
 	// In the fullness of time, equivalents of the methods of this class should be
-	// auto-generated from
-	// the OpDefs linked into libtensorflow_jni.so. That would match what is done
-	// in other languages
-	// like Python, C++ and Go.
+	// auto-generated from the OpDefs linked into libtensorflow_jni.so. That would
+	// match what is done in other languages like Python, C++ and Go.
 	private static class GraphBuilder {
 
 		GraphBuilder(final Graph g) {
