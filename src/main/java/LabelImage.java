@@ -42,7 +42,7 @@ public class LabelImage implements Command {
 	@Parameter
 	private DatasetIOService datasetIOService;
 	@Parameter
-	private LogService logService;
+	private LogService log;
 	@Parameter
 	private File inputFile;
 
@@ -73,8 +73,8 @@ public class LabelImage implements Command {
 			// should be ammortized.
 			final byte[] graphDef = loadInceptionModelGraphDef();
 			final List<String> labels = loadInceptionLabels();
-			logService.info("Loaded GraphDef of " + graphDef.length + " bytes and " +
-				labels.size() + " labels");
+			log.info("Loaded GraphDef of " + graphDef.length + " bytes and " + labels
+				.size() + " labels");
 
 			try (Tensor image = constructAndExecuteGraphToNormalizeImage(
 				imageBytes))
@@ -84,11 +84,11 @@ public class LabelImage implements Command {
 				final int bestLabelIdx = maxIndex(labelProbabilities);
 				outputLabel = String.format("%s (%.2f%% likely)", labels.get(
 					bestLabelIdx), labelProbabilities[bestLabelIdx] * 100f);
-				logService.info(filepath + " --> " + outputLabel);
+				log.info(filepath + " --> " + outputLabel);
 			}
 		}
 		catch (final Exception exc) {
-			logService.error(exc);
+			log.error(exc);
 		}
 	}
 
@@ -107,8 +107,7 @@ public class LabelImage implements Command {
 		final int nbytes = ClassLoader.getResource(path).openConnection()
 			.getContentLength();
 		final byte[] graphDef = new byte[nbytes];
-		logService.info("Reading " + nbytes +
-			" bytes of the TensorFlow inception model");
+		log.info("Reading " + nbytes + " bytes of the TensorFlow inception model");
 		try (DataInputStream is = new DataInputStream(getClass().getClassLoader()
 			.getResourceAsStream(path)))
 		{
