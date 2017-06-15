@@ -10,8 +10,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import net.imagej.Dataset;
 import net.imagej.ImageJ;
-import net.imagej.ImgPlus;
 import net.imglib2.Cursor;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
@@ -19,6 +19,7 @@ import net.imglib2.img.Img;
 import net.imglib2.img.array.ArrayImg;
 import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.FloatArray;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
 
@@ -49,7 +50,7 @@ public class LabelImage implements Command {
 	private LogService log;
 
 	@Parameter
-	private ImgPlus<FloatType> inputImage;
+	private Dataset inputImage;
 
 	@Parameter(type = ItemIO.OUTPUT)
 	private Img<FloatType> outputImage;
@@ -121,13 +122,18 @@ public class LabelImage implements Command {
 		return tmp;
 	}
 
-	private static Tensor loadFromImgLib(
-		final RandomAccessibleInterval<FloatType> image)
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private static Tensor loadFromImgLib(final Dataset d) {
+		return loadFromImgLib((RandomAccessibleInterval) d.getImgPlus());
+	}
+
+	private static <T extends RealType<T>> Tensor loadFromImgLib(
+		final RandomAccessibleInterval<T> image)
 	{
 		try (final Graph g = new Graph()) {
 			final GraphBuilder b = new GraphBuilder(g);
 			// TODO we can be way more efficient here...
-			final RandomAccess<FloatType> source = image.randomAccess();
+			final RandomAccess<T> source = image.randomAccess();
 			final long[] dims = Intervals.dimensionsAsLongArray(image);
 			final long[] reshapedDims = new long[] { dims[1], dims[0], dims[2] };
 
@@ -141,7 +147,7 @@ public class LabelImage implements Command {
 					for (int c = 0; c < dims[2]; c++) {
 						destCursor.fwd();
 						source.setPosition(c, 2);
-						destCursor.get().set(source.get());
+						destCursor.get().setReal(source.get().getRealDouble());
 					}
 				}
 			}
