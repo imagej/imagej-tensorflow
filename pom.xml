@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.scijava</groupId>
     <artifactId>pom-scijava</artifactId>
-    <version>12.0.0</version>
+    <version>16.1.0</version>
     <relativePath />
   </parent>
 
@@ -17,7 +17,7 @@
   <version>1.0.0-SNAPSHOT</version>
 
   <name>Sample ImageJ commands that use TensorFlow models</name>
-        <description>Some examples of using TensorFlow models in ImageJ.</description>
+  <description>Some examples of using TensorFlow models in ImageJ.</description>
   <url>https://github.com/asimshankar/imagej-tensorflow</url>
   <inceptionYear>2017</inceptionYear>
 
@@ -49,6 +49,7 @@
       <version>1.1.0</version>
     </dependency>
   </dependencies>
+
   <build>
     <plugins>
       <!-- Use the download-maven-plugin to package the model. -->
@@ -59,14 +60,14 @@
         <executions>
           <execution>
             <id>download-inception-model</id>
-            <phase>pre-integration-test</phase>
+            <phase>generate-resources</phase>
             <goals>
               <goal>wget</goal>
             </goals>
             <configuration>
               <url>https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip</url>
               <unpack>true</unpack>
-              <outputDirectory>src/main/resources/tensorflow_models/inception5h</outputDirectory>
+              <outputDirectory>target/classes/tensorflow_models/inception5h</outputDirectory>
               <md5>8d710f37e337ed3a0aaa3b6c4cb4b214</md5>
             </configuration>
           </execution>
@@ -74,4 +75,51 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>only-eclipse</id>
+      <activation>
+        <property>
+          <name>m2e.version</name>
+        </property>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <!--
+            Configure the Eclipse m2e plugin to support needed plugins.
+            See also: http://stackoverflow.com/a/23707050
+            -->
+            <plugin>
+              <groupId>org.eclipse.m2e</groupId>
+              <artifactId>lifecycle-mapping</artifactId>
+              <version>1.0.0</version>
+              <configuration>
+                <lifecycleMappingMetadata>
+                  <pluginExecutions>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>com.googlecode.maven-download-plugin</groupId>
+                        <artifactId>download-maven-plugin</artifactId>
+                        <versionRange>[1.0.0,)</versionRange>
+                        <goals>
+                          <goal>wget</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <execute>
+                          <runOnConfiguration>true</runOnConfiguration>
+                        </execute>
+                      </action>
+                    </pluginExecution>
+                  </pluginExecutions>
+                </lifecycleMappingMetadata>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
 </project>
