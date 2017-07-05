@@ -36,7 +36,7 @@ import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 
 /**
- * Command to use an Inception-image recognition model to label a JPEG image.
+ * Command to use an Inception-image recognition model to label an image.
  * <p>
  * See the
  * <a href="https://www.tensorflow.org/tutorials/image_recognition">TensorFlow
