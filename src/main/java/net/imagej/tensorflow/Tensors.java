@@ -34,36 +34,45 @@ public final class Tensors {
 	public static <T extends RealType<T>> Tensor tensor(
 		final RandomAccessibleInterval<T> image)
 	{
+		final long[] dims = Intervals.dimensionsAsLongArray(image);
+		final long[] reshapedDims = new long[] { dims[1], dims[0], dims[2] };
+		final float[] value = floatArray(image);
+
 		try (final Graph g = new Graph()) {
 			final GraphBuilder b = new GraphBuilder(g);
-			// TODO we can be way more efficient here...
-			final RandomAccess<T> source = image.randomAccess();
-			final long[] dims = Intervals.dimensionsAsLongArray(image);
-			final long[] reshapedDims = new long[] { dims[1], dims[0], dims[2] };
-
-			final ArrayImg<FloatType, FloatArray> dest = ArrayImgs.floats(
-				reshapedDims);
-			final Cursor<FloatType> destCursor = dest.cursor();
-			for (int y = 0; y < dims[1]; y++) {
-				source.setPosition(y, 1);
-				for (int x = 0; x < dims[0]; x++) {
-					source.setPosition(x, 0);
-					for (int c = 0; c < dims[2]; c++) {
-						destCursor.fwd();
-						source.setPosition(c, 2);
-						destCursor.get().setReal(source.get().getRealDouble());
-					}
-				}
-			}
 
 			// Since the graph is being constructed once per execution here, we can
 			// use a constant for the input image. If the graph were to be re-used for
 			// multiple input images, a placeholder would have been more appropriate.
-			final Output input = b.constant("input", dest.update(null)
-				.getCurrentStorageArray(), reshapedDims);
+			final Output input = b.constant("input", value, reshapedDims);
 			try (Session s = new Session(g)) {
 				return s.runner().fetch(input.op().name()).run().get(0);
 			}
 		}
+	}
+
+	private static <T extends RealType<T>> float[] floatArray(
+		final RandomAccessibleInterval<T> image)
+	{
+		// TODO we can be way more efficient here...
+		final RandomAccess<T> source = image.randomAccess();
+		final long[] dims = Intervals.dimensionsAsLongArray(image);
+		final long[] reshapedDims = new long[] { dims[1], dims[0], dims[2] };
+
+		final ArrayImg<FloatType, FloatArray> dest = ArrayImgs.floats(
+			reshapedDims);
+		final Cursor<FloatType> destCursor = dest.cursor();
+		for (int y = 0; y < dims[1]; y++) {
+			source.setPosition(y, 1);
+			for (int x = 0; x < dims[0]; x++) {
+				source.setPosition(x, 0);
+				for (int c = 0; c < dims[2]; c++) {
+					destCursor.fwd();
+					source.setPosition(c, 2);
+					destCursor.get().setReal(source.get().getRealDouble());
+				}
+			}
+		}
+		return dest.update(null).getCurrentStorageArray();
 	}
 }
