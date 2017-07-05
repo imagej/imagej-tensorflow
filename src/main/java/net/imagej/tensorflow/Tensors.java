@@ -13,8 +13,6 @@ import net.imglib2.img.basictypeaccess.array.FloatArray;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
 import net.imglib2.util.Intervals;
-import net.imglib2.view.IntervalView;
-import net.imglib2.view.Views;
 
 import org.tensorflow.Graph;
 import org.tensorflow.Output;
@@ -37,8 +35,7 @@ public final class Tensors {
 	public static <T extends RealType<T>> Tensor tensor(
 		final RandomAccessibleInterval<T> image)
 	{
-		final IntervalView<T> imageCXY = Views.permute(Views.permute(image, 2, 1), 0, 1);
-		final float[] value = floatArray(imageCXY);
+		final float[] value = floatArray(image);
 
 		try (final Graph g = new Graph()) {
 			final GraphBuilder b = new GraphBuilder(g);
@@ -46,7 +43,7 @@ public final class Tensors {
 			// Since the graph is being constructed once per execution here, we can
 			// use a constant for the input image. If the graph were to be re-used for
 			// multiple input images, a placeholder would have been more appropriate.
-			final Output input = b.constant("input", value, reversedDims(imageCXY));
+			final Output input = b.constant("input", value, reversedDims(image));
 			try (Session s = new Session(g)) {
 				return s.runner().fetch(input.op().name()).run().get(0);
 			}

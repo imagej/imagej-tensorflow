@@ -17,7 +17,10 @@ import net.imagej.tensorflow.GraphBuilder;
 import net.imagej.tensorflow.Tensors;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
+import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.view.IntervalView;
+import net.imglib2.view.Views;
 
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -141,7 +144,17 @@ public class LabelImage implements Command {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static Tensor loadFromImgLib(final Dataset d) {
-		return Tensors.tensor((RandomAccessibleInterval) d.getImgPlus());
+		return loadFromImgLib((RandomAccessibleInterval) d.getImgPlus());
+	}
+
+	private static <T extends RealType<T>> Tensor loadFromImgLib(
+		final RandomAccessibleInterval<T> image)
+	{
+		// NB: Assumes XYC ordering. TensorFlow wants CXY.
+		// TODO: Need to be smarter about this.
+		final IntervalView<T> imageCXY = //
+			Views.permute(Views.permute(image, 2, 1), 0, 1);
+		return Tensors.tensor(imageCXY);
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
