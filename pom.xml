@@ -16,9 +16,9 @@
   <artifactId>imagej-tensorflow</artifactId>
   <version>0.1.0-SNAPSHOT</version>
 
-  <name>Sample ImageJ commands that use TensorFlow models</name>
-  <description>Some examples of using TensorFlow models in ImageJ.</description>
-  <url>https://github.com/asimshankar/imagej-tensorflow</url>
+  <name>ImageJ/TensorFlow integration</name>
+  <description>Call TensorFlow from ImageJ.</description>
+  <url>https://github.com/imagej/imagej-tensorflow</url>
   <inceptionYear>2017</inceptionYear>
 
   <properties>
@@ -28,6 +28,7 @@
          for publishable plugins. -->
     <enforcer.skip>true</enforcer.skip>
     <exec.mainClass>LabelImage</exec.mainClass>
+    <tensorflow.version>1.1.0</tensorflow.version>
   </properties>
 
   <repositories>
@@ -46,7 +47,7 @@
     <dependency>
       <groupId>org.tensorflow</groupId>
       <artifactId>tensorflow</artifactId>
-      <version>1.1.0</version>
+      <version>${tensorflow.version}</version>
     </dependency>
   </dependencies>
 
