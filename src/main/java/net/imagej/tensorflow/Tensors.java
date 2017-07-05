@@ -38,7 +38,6 @@ public final class Tensors {
 		final RandomAccessibleInterval<T> image)
 	{
 		final IntervalView<T> imageCXY = Views.permute(Views.permute(image, 2, 1), 0, 1);
-		final long[] reshapedDims = reversedDims(imageCXY);
 		final float[] value = floatArray(imageCXY);
 
 		try (final Graph g = new Graph()) {
@@ -47,7 +46,7 @@ public final class Tensors {
 			// Since the graph is being constructed once per execution here, we can
 			// use a constant for the input image. If the graph were to be re-used for
 			// multiple input images, a placeholder would have been more appropriate.
-			final Output input = b.constant("input", value, reshapedDims);
+			final Output input = b.constant("input", value, reversedDims(imageCXY));
 			try (Session s = new Session(g)) {
 				return s.runner().fetch(input.op().name()).run().get(0);
 			}
@@ -69,8 +68,7 @@ public final class Tensors {
 		final RandomAccess<T> source = image.randomAccess();
 		final long[] dims = Intervals.dimensionsAsLongArray(image);
 
-		final ArrayImg<FloatType, FloatArray> dest = ArrayImgs.floats(
-			dims);
+		final ArrayImg<FloatType, FloatArray> dest = ArrayImgs.floats(dims);
 		final Cursor<FloatType> destCursor = dest.cursor();
 		while (destCursor.hasNext()) {
 			destCursor.fwd();
