@@ -24,14 +24,14 @@ public final class Tensors {
 		// NB: Prevent instantiation of utility class.
 	}
 
-	public static Img<FloatType> toImg(final Tensor image) {
+	public static Img<FloatType> img(final Tensor image) {
 		final float[] out = new float[image.numElements()];
 		final Img<FloatType> tmp = ArrayImgs.floats(out, image.shape());
 		image.writeTo(FloatBuffer.wrap(out));
 		return tmp;
 	}
 
-	public static <T extends RealType<T>> Tensor loadFromImgLib(
+	public static <T extends RealType<T>> Tensor tensor(
 		final RandomAccessibleInterval<T> image)
 	{
 		try (final Graph g = new Graph()) {

@@ -74,7 +74,7 @@ public class LabelImage implements Command {
 			try (Tensor image = constructAndExecuteGraphToNormalizeImage(
 				fromImgLib))
 			{
-				outputImage = Tensors.toImg(image);
+				outputImage = Tensors.img(image);
 				final float[] labelProbabilities = executeInceptionGraph(graphDef,
 					image);
 
@@ -141,7 +141,7 @@ public class LabelImage implements Command {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static Tensor loadFromImgLib(final Dataset d) {
-		return Tensors.loadFromImgLib((RandomAccessibleInterval) d.getImgPlus());
+		return Tensors.tensor((RandomAccessibleInterval) d.getImgPlus());
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
