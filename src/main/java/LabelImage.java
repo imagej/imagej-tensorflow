@@ -3,7 +3,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.FloatBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -14,16 +13,11 @@ import java.util.stream.IntStream;
 
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
-import net.imglib2.Cursor;
-import net.imglib2.RandomAccess;
+import net.imagej.tensorflow.GraphBuilder;
+import net.imagej.tensorflow.Tensors;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
-import net.imglib2.img.array.ArrayImg;
-import net.imglib2.img.array.ArrayImgs;
-import net.imglib2.img.basictypeaccess.array.FloatArray;
-import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.util.Intervals;
 
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -80,7 +74,7 @@ public class LabelImage implements Command {
 			try (Tensor image = constructAndExecuteGraphToNormalizeImage(
 				fromImgLib))
 			{
-				outputImage = toImg(image);
+				outputImage = Tensors.toImg(image);
 				final float[] labelProbabilities = executeInceptionGraph(graphDef,
 					image);
 
@@ -145,52 +139,9 @@ public class LabelImage implements Command {
 		}
 	}
 
-	private static Img<FloatType> toImg(final Tensor image) {
-		final float[] out = new float[image.numElements()];
-		final Img<FloatType> tmp = ArrayImgs.floats(out, image.shape());
-		image.writeTo(FloatBuffer.wrap(out));
-		return tmp;
-	}
-
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static Tensor loadFromImgLib(final Dataset d) {
-		return loadFromImgLib((RandomAccessibleInterval) d.getImgPlus());
-	}
-
-	private static <T extends RealType<T>> Tensor loadFromImgLib(
-		final RandomAccessibleInterval<T> image)
-	{
-		try (final Graph g = new Graph()) {
-			final GraphBuilder b = new GraphBuilder(g);
-			// TODO we can be way more efficient here...
-			final RandomAccess<T> source = image.randomAccess();
-			final long[] dims = Intervals.dimensionsAsLongArray(image);
-			final long[] reshapedDims = new long[] { dims[1], dims[0], dims[2] };
-
-			final ArrayImg<FloatType, FloatArray> dest = ArrayImgs.floats(
-				reshapedDims);
-			final Cursor<FloatType> destCursor = dest.cursor();
-			for (int y = 0; y < dims[1]; y++) {
-				source.setPosition(y, 1);
-				for (int x = 0; x < dims[0]; x++) {
-					source.setPosition(x, 0);
-					for (int c = 0; c < dims[2]; c++) {
-						destCursor.fwd();
-						source.setPosition(c, 2);
-						destCursor.get().setReal(source.get().getRealDouble());
-					}
-				}
-			}
-
-			// Since the graph is being constructed once per execution here, we can
-			// use a constant for the input image. If the graph were to be re-used for
-			// multiple input images, a placeholder would have been more appropriate.
-			final Output input = b.constant("input", dest.update(null)
-				.getCurrentStorageArray(), reshapedDims);
-			try (Session s = new Session(g)) {
-				return s.runner().fetch(input.op().name()).run().get(0);
-			}
-		}
+		return Tensors.loadFromImgLib((RandomAccessibleInterval) d.getImgPlus());
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
@@ -250,57 +201,6 @@ public class LabelImage implements Command {
 				return result.copyTo(new float[1][nlabels])[0];
 			}
 		}
-	}
-
-	// In the fullness of time, equivalents of the methods of this class should be
-	// auto-generated from the OpDefs linked into libtensorflow_jni.so. That would
-	// match what is done in other languages like Python, C++ and Go.
-	private static class GraphBuilder {
-
-		GraphBuilder(final Graph g) {
-			this.g = g;
-		}
-
-		Output div(final Output x, final Output y) {
-			return binaryOp("Div", x, y);
-		}
-
-		Output sub(final Output x, final Output y) {
-			return binaryOp("Sub", x, y);
-		}
-
-		Output resizeBilinear(final Output images, final Output size) {
-			return binaryOp("ResizeBilinear", images, size);
-		}
-
-		Output expandDims(final Output input, final Output dim) {
-			return binaryOp("ExpandDims", input, dim);
-		}
-
-		Output constant(final String name, final Object value) {
-			try (Tensor t = Tensor.create(value)) {
-				return g.opBuilder("Const", name).setAttr("dtype", t.dataType())
-					.setAttr("value", t).build().output(0);
-			}
-		}
-
-		Output constant(final String name, final float[] value,
-			final long... shape)
-		{
-			try (Tensor t = Tensor.create(shape, FloatBuffer.wrap(value))) {
-				return g.opBuilder("Const", name).setAttr("dtype", t.dataType())
-					.setAttr("value", t).build().output(0);
-			}
-		}
-
-		private Output binaryOp(final String type, final Output in1,
-			final Output in2)
-		{
-			return g.opBuilder(type, type).addInput(in1).addInput(in2).build().output(
-				0);
-		}
-
-		private final Graph g;
 	}
 
 	public static void main(String[] args) throws IOException {
