@@ -16,25 +16,88 @@
 	<artifactId>imagej-tensorflow</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 
-	<name>ImageJ/TensorFlow integration</name>
-	<description>Call TensorFlow from ImageJ.</description>
+	<name>ImageJ-TensorFlow</name>
+	<description>ImageJ/TensorFlow integration.</description>
 	<url>https://github.com/imagej/imagej-tensorflow</url>
 	<inceptionYear>2017</inceptionYear>
+	<organization>
+		<name>ImageJ</name>
+		<url>https://imagej.net/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>Simplified BSD License</name>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<id>ctrueden</id>
+			<name>Curtis Rueden</name>
+			<url>https://imagej.net/User:Rueden</url>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>Asim Shankar</name>
+			<properties><id>asimshankar</id></properties>
+			<roles><role>founder</role></roles>
+		</contributor>
+		<contributor>
+			<name>Samuel Yang</name>
+		</contributor>
+		<contributor>
+			<name>Christian Dietz</name>
+			<url>https://imagej.net/User:Dietzc</url>
+			<properties><id>dietzc</id></properties>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>http://forum.imagej.net/</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://github.com/imagej/imagej-tensorflow</connection>
+		<developerConnection>scm:git:git@github.com:imagej/imagej-tensorflow</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/imagej/imagej-tensorflow</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/imagej/imagej-tensorflow/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/imagej/imagej-tensorflow</url>
+	</ciManagement>
 
 	<properties>
-		<!-- This repository only contains samples. To keep the pom.xml
-				 more focused, I've removed requirements (such as contributor,
-				 developer, source code management) enforced by the maven-enforcer-plugin
-				 for publishable plugins. -->
-		<enforcer.skip>true</enforcer.skip>
 		<main-class>LabelImage</main-class>
+		<license.licenseName>bsd_2</license.licenseName>
+		<license.copyrightOwners>Board of Regents of the University of
+			Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
+
 		<tensorflow.version>1.1.0</tensorflow.version>
 	</properties>
 
 	<repositories>
 		<repository>
 			<id>imagej.public</id>
-			<url>http://maven.imagej.net/content/groups/public</url>
+			<url>https://maven.imagej.net/content/groups/public</url>
 		</repository>
 	</repositories>
 
