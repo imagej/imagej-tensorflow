@@ -27,7 +27,7 @@
          developer, source code management) enforced by the maven-enforcer-plugin
          for publishable plugins. -->
     <enforcer.skip>true</enforcer.skip>
-    <exec.mainClass>LabelImage</exec.mainClass>
+    <main-class>LabelImage</main-class>
     <tensorflow.version>1.1.0</tensorflow.version>
   </properties>
 
