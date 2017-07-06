@@ -66,7 +66,7 @@ public final class Tensors {
 		final long[] dims = Intervals.dimensionsAsLongArray(image);
 
 		final ArrayImg<FloatType, FloatArray> dest = ArrayImgs.floats(dims);
-		final Cursor<FloatType> destCursor = dest.cursor();
+		final Cursor<FloatType> destCursor = dest.localizingCursor();
 		while (destCursor.hasNext()) {
 			destCursor.fwd();
 			source.setPosition(destCursor);
