@@ -19,6 +19,14 @@ import org.tensorflow.Output;
 import org.tensorflow.Session;
 import org.tensorflow.Tensor;
 
+/**
+ * Utility class for working with TensorFlow {@link Tensor} objects. In
+ * particular, this class provides methods for converting between ImgLib2 data
+ * structures and TensorFlow {@link Tensor}s.
+ *
+ * @author Curtis Rueden
+ * @author Christian Dietz
+ */
 public final class Tensors {
 
 	private Tensors() {
