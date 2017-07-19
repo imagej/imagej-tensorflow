@@ -104,9 +104,12 @@ public class LabelImage implements Command {
 			log.info("Loaded GraphDef of " + graphDef.length + " bytes and " + labels
 				.size() + " labels");
 
-			final Tensor inputTensor = loadFromImgLib(inputImage);
 
-			try (final Tensor image = normalizeImage(inputTensor)) {
+			try (
+				final Tensor inputTensor = loadFromImgLib(inputImage);
+				final Tensor image = normalizeImage(inputTensor)
+			)
+			{
 				outputImage = Tensors.img(image);
 				final float[] labelProbabilities = executeInceptionGraph(graphDef,
 					image);
