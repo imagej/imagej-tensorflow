@@ -73,7 +73,13 @@ public final class Tensors {
 	public static <T extends RealType<T>> Tensor tensor(
 		final RandomAccessibleInterval<T> image)
 	{
-		final float[] value = floatArray(image);
+		return tensor(image, false);
+	}
+
+	public static <T extends RealType<T>> Tensor tensor(
+		final RandomAccessibleInterval<T> image, final boolean normalize)
+	{
+		final float[] value = floatArray(image, normalize);
 
 		try (final Graph g = new Graph()) {
 			final GraphBuilder b = new GraphBuilder(g);
@@ -97,7 +103,7 @@ public final class Tensors {
 	}
 
 	private static <T extends RealType<T>> float[] floatArray(
-		final RandomAccessibleInterval<T> image)
+		final RandomAccessibleInterval<T> image, final boolean normalize)
 	{
 		// TODO we can be way more efficient here...
 		final RandomAccess<T> source = image.randomAccess();
@@ -105,11 +111,41 @@ public final class Tensors {
 
 		final ArrayImg<FloatType, FloatArray> dest = ArrayImgs.floats(dims);
 		final Cursor<FloatType> destCursor = dest.localizingCursor();
-		while (destCursor.hasNext()) {
-			destCursor.fwd();
-			source.setPosition(destCursor);
-			destCursor.get().setReal(source.get().getRealDouble());
+
+		if (normalize) {
+			// Normalize the data.
+			final double min = typeMin(image), max = typeMax(image);
+			final double range = max - min;
+			while (destCursor.hasNext()) {
+				destCursor.fwd();
+				source.setPosition(destCursor);
+				final double value = (source.get().getRealDouble() - min) / range;
+				destCursor.get().setReal(value);
+			}
 		}
+		else {
+			// Do not perform normalization.
+			while (destCursor.hasNext()) {
+				destCursor.fwd();
+				source.setPosition(destCursor);
+				destCursor.get().setReal(source.get().getRealDouble());
+			}
+		}
+
 		return dest.update(null).getCurrentStorageArray();
+	}
+
+	private static <T extends RealType<T>> double typeMin(
+		final RandomAccessibleInterval<T> image)
+	{
+		// NB: Theoretically unsound, but works in practice for needed cases.
+		return image.randomAccess().get().getMinValue();
+	}
+
+	private static <T extends RealType<T>> double typeMax(
+		final RandomAccessibleInterval<T> image)
+	{
+		// NB: Theoretically unsound, but works in practice for needed cases.
+		return image.randomAccess().get().getMaxValue();
 	}
 }
