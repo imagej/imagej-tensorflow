@@ -1,3 +1,4 @@
+package net.imagej.tensorflow.demo;
 /*-
  * #%L
  * ImageJ/TensorFlow integration.
