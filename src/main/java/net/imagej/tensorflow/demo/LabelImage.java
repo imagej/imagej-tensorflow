@@ -105,9 +105,7 @@ public class LabelImage implements Command {
 
 			final Tensor inputTensor = loadFromImgLib(inputImage);
 
-			try (final Tensor image = constructAndExecuteGraphToNormalizeImage(
-				inputTensor))
-			{
+			try (final Tensor image = normalizeImage(inputTensor)) {
 				outputImage = Tensors.img(image);
 				final float[] labelProbabilities = executeInceptionGraph(graphDef,
 					image);
@@ -192,9 +190,7 @@ public class LabelImage implements Command {
 	// All the code below was essentially copied verbatim from:
 	// https://github.com/tensorflow/tensorflow/blob/e8f2aad0c0502fde74fc629f5b13f04d5d206700/tensorflow/java/src/main/java/org/tensorflow/examples/LabelImage.java
 	// -----------------------------------------------------------------------------------------------------------------
-	private static Tensor constructAndExecuteGraphToNormalizeImage(
-		final Tensor t)
-	{
+	private static Tensor normalizeImage(final Tensor t) {
 		try (Graph g = new Graph()) {
 			final GraphBuilder b = new GraphBuilder(g);
 			// Some constants specific to the pre-trained model at:
