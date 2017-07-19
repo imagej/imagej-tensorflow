@@ -79,7 +79,16 @@ public final class Tensors {
 	public static <T extends RealType<T>> Tensor tensor(
 		final RandomAccessibleInterval<T> image, final boolean normalize)
 	{
-		final float[] value = floatArray(image, normalize);
+		final double min = normalize ? typeMin(image) : Double.NaN;
+		final double max = normalize ? typeMax(image) : Double.NaN;
+		return tensor(image, min, max);
+	}
+
+	public static <T extends RealType<T>> Tensor tensor(
+		final RandomAccessibleInterval<T> image, final double min,
+		final double max)
+	{
+		final float[] value = floatArray(image, min, max);
 
 		try (final Graph g = new Graph()) {
 			final GraphBuilder b = new GraphBuilder(g);
@@ -103,7 +112,7 @@ public final class Tensors {
 	}
 
 	private static <T extends RealType<T>> float[] floatArray(
-		final RandomAccessibleInterval<T> image, final boolean normalize)
+		final RandomAccessibleInterval<T> image, final double min, final double max)
 	{
 		// TODO we can be way more efficient here...
 		final RandomAccess<T> source = image.randomAccess();
@@ -112,9 +121,8 @@ public final class Tensors {
 		final ArrayImg<FloatType, FloatArray> dest = ArrayImgs.floats(dims);
 		final Cursor<FloatType> destCursor = dest.localizingCursor();
 
-		if (normalize) {
+		if (min == min && max == max) {
 			// Normalize the data.
-			final double min = typeMin(image), max = typeMax(image);
 			final double range = max - min;
 			while (destCursor.hasNext()) {
 				destCursor.fwd();
