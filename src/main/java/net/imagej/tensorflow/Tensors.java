@@ -65,9 +65,8 @@ public final class Tensors {
 
 	public static Img<FloatType> img(final Tensor image) {
 		final float[] out = new float[image.numElements()];
-		final Img<FloatType> tmp = ArrayImgs.floats(out, image.shape());
 		image.writeTo(FloatBuffer.wrap(out));
-		return tmp;
+		return ArrayImgs.floats(out, image.shape());
 	}
 
 	public static <T extends RealType<T>> Tensor tensor(
