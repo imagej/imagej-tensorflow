@@ -1,4 +1,3 @@
-package net.imagej.tensorflow.demo;
 /*-
  * #%L
  * ImageJ/TensorFlow integration.
@@ -28,6 +27,8 @@ package net.imagej.tensorflow.demo;
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
+
+package net.imagej.tensorflow.demo;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
