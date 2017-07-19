@@ -89,7 +89,7 @@
 		<main-class>LabelImage</main-class>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Board of Regents of the University of
-			Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
+Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 
 		<tensorflow.version>1.1.0</tensorflow.version>
 	</properties>
