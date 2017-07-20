@@ -30,22 +30,16 @@
 
 package net.imagej.tensorflow.demo;
 
-import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
 import net.imagej.tensorflow.GraphBuilder;
+import net.imagej.tensorflow.TensorFlowService;
 import net.imagej.tensorflow.Tensors;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
@@ -56,6 +50,7 @@ import net.imglib2.view.Views;
 
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
+import org.scijava.io.http.HTTPLocation;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -77,6 +72,14 @@ import org.tensorflow.Tensor;
 	headless = true)
 public class LabelImage implements Command {
 
+	private static final String INCEPTION_MODEL_URL =
+		"https://storage.googleapis.com/download.tensorflow.org/models/inception5h.zip";
+
+	private static final String MODEL_NAME = "inception5h";
+
+	@Parameter
+	private TensorFlowService tensorFlowService;
+
 	@Parameter
 	private LogService log;
 
@@ -95,15 +98,12 @@ public class LabelImage implements Command {
 	@Override
 	public void run() {
 		try {
-			// This is not efficient: Loading the model, the labels and constructing a
-			// graph to normalize the image on every call to run(). Fine for a
-			// proof-of-concept demo, but in any real implementation, model loading
-			// should be ammortized.
-			final byte[] graphDef = loadInceptionModelGraphDef();
-			final List<String> labels = loadInceptionLabels();
-			log.info("Loaded GraphDef of " + graphDef.length + " bytes and " + labels
-				.size() + " labels");
-
+			final HTTPLocation source = new HTTPLocation(INCEPTION_MODEL_URL);
+			final Graph graph = tensorFlowService.loadGraph(source, MODEL_NAME,
+				"tensorflow_inception_graph.pb");
+			final List<String> labels = tensorFlowService.loadLabels(source,
+				MODEL_NAME, "imagenet_comp_graph_label_strings.txt");
+			log.info("Loaded graph and " + labels.size() + " labels");
 
 			try (
 				final Tensor inputTensor = loadFromImgLib(inputImage);
@@ -111,8 +111,7 @@ public class LabelImage implements Command {
 			)
 			{
 				outputImage = Tensors.img(image);
-				final float[] labelProbabilities = executeInceptionGraph(graphDef,
-					image);
+				final float[] labelProbabilities = executeInceptionGraph(graph, image);
 
 				// Sort labels by probability.
 				final int labelCount = Math.min(labelProbabilities.length, labels
@@ -145,33 +144,6 @@ public class LabelImage implements Command {
 		}
 		catch (final Exception exc) {
 			log.error(exc);
-		}
-	}
-
-	private byte[] loadInceptionModelGraphDef() throws IOException {
-		final String path = Paths.get("tensorflow_models", "inception5h",
-			"tensorflow_inception_graph.pb").toString();
-		getClass().getClassLoader();
-		final int nbytes = ClassLoader.getSystemResource(path).openConnection()
-			.getContentLength();
-		final byte[] graphDef = new byte[nbytes];
-		log.info("Reading " + nbytes + " bytes of the TensorFlow inception model");
-		try (DataInputStream is = new DataInputStream(getClass().getClassLoader()
-			.getResourceAsStream(path)))
-		{
-			is.readFully(graphDef);
-		}
-		return graphDef;
-	}
-
-	private List<String> loadInceptionLabels() throws IOException {
-		final String path = Paths.get("tensorflow_models", "inception5h",
-			"imagenet_comp_graph_label_strings.txt").toString();
-		try (InputStream is = getClass().getClassLoader().getResourceAsStream(
-			path))
-		{
-			return new BufferedReader(new InputStreamReader(is,
-				StandardCharsets.UTF_8)).lines().collect(Collectors.toList());
 		}
 	}
 
@@ -226,24 +198,24 @@ public class LabelImage implements Command {
 		}
 	}
 
-	private static float[] executeInceptionGraph(final byte[] graphDef,
+	private static float[] executeInceptionGraph(final Graph g,
 		final Tensor image)
 	{
-		try (Graph g = new Graph()) {
-			g.importGraphDef(graphDef);
-			try (Session s = new Session(g);
-					Tensor result = s.runner().feed("input", image).fetch("output").run()
-						.get(0))
-			{
-				final long[] rshape = result.shape();
-				if (result.numDimensions() != 2 || rshape[0] != 1) {
-					throw new RuntimeException(String.format(
-						"Expected model to produce a [1 N] shaped tensor where N is the number of labels, instead it produced one with shape %s",
-						Arrays.toString(rshape)));
-				}
-				final int nlabels = (int) rshape[1];
-				return result.copyTo(new float[1][nlabels])[0];
+		try (
+			final Session s = new Session(g);
+			final Tensor result = s.runner().feed("input", image)//
+				.fetch("output").run().get(0)
+		)
+		{
+			final long[] rshape = result.shape();
+			if (result.numDimensions() != 2 || rshape[0] != 1) {
+				throw new RuntimeException(String.format(
+					"Expected model to produce a [1 N] shaped tensor where N is " +
+						"the number of labels, instead it produced one with shape %s",
+					Arrays.toString(rshape)));
 			}
+			final int nlabels = (int) rshape[1];
+			return result.copyTo(new float[1][nlabels])[0];
 		}
 	}
 
