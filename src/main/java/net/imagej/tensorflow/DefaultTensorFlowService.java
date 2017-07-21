@@ -38,6 +38,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -48,14 +49,18 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.scijava.app.AppService;
+import org.scijava.app.StatusService;
 import org.scijava.download.DiskLocationCache;
 import org.scijava.download.DownloadService;
+import org.scijava.event.EventHandler;
 import org.scijava.io.location.BytesLocation;
 import org.scijava.io.location.Location;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
 import org.scijava.service.Service;
+import org.scijava.task.Task;
+import org.scijava.task.event.TaskEvent;
 import org.scijava.util.ByteArray;
 import org.scijava.util.FileUtils;
 import org.tensorflow.Graph;
@@ -228,7 +233,11 @@ public class DefaultTensorFlowService extends AbstractService implements
 
 		// Download the compressed model into the byte array.
 		final BytesLocation bytes = new BytesLocation(byteArray);
-		downloadService.download(source, bytes, modelCache()).task().waitFor();
+		final Task task = //
+			downloadService.download(source, bytes, modelCache()).task();
+		final StatusUpdater statusUpdater = new StatusUpdater(task);
+		context().inject(statusUpdater);
+		task.waitFor();
 
 		// Extract the contents of the compressed data to the model cache.
 		final byte[] buf = new byte[64 * 1024];
@@ -240,19 +249,72 @@ public class DefaultTensorFlowService extends AbstractService implements
 				final ZipEntry entry = zis.getNextEntry();
 				if (entry == null) break; // All done!
 				final String name = entry.getName();
+				statusUpdater.update("Unpacking " + name);
 				final File outFile = new File(destDir, name);
 				if (entry.isDirectory()) {
 					outFile.mkdirs();
 				}
 				else {
+					final int size = (int) entry.getSize();
+					int len = 0;
 					try (final FileOutputStream out = new FileOutputStream(outFile)) {
 						while (true) {
+							statusUpdater.update(len, size, "Unpacking " + name);
 							final int r = zis.read(buf);
 							if (r < 0) break; // end of entry
+							len += r;
 							out.write(buf, 0, r);
 						}
 					}
 				}
+			}
+		}
+		statusUpdater.clear();
+	}
+
+	/**
+	 * A dumb class which passes task events on to the {@link StatusService}.
+	 * Eventually, this sort of logic will be built in to SciJava Common. But for
+	 * the moment, we do it ourselves.
+	 */
+	private class StatusUpdater {
+		private final DecimalFormat formatter = new DecimalFormat("##.##");
+		private final Task task;
+
+		private long lastUpdate;
+
+		@Parameter
+		private StatusService statusService;
+
+		private StatusUpdater(final Task task) {
+			this.task = task;
+		}
+
+		public void update(final String message) {
+			statusService.showStatus(message);
+		}
+
+		public void update(final int value, final int max, final String message) {
+			final long timestamp = System.currentTimeMillis();
+			if (timestamp < lastUpdate + 100) return; // Avoid excessive updates.
+			lastUpdate = timestamp;
+
+			final double percent = 100.0 * value / max;
+			statusService.showStatus(value, max, message + ": " + //
+				formatter.format(percent) + "%");
+		}
+
+		public void clear() {
+			statusService.clearStatus();
+		}
+
+		@EventHandler
+		private void onEvent(final TaskEvent evt) {
+			if (task == evt.getTask()) {
+				final int value = (int) task.getProgressValue();
+				final int max = (int) task.getProgressMaximum();
+				final String message = task.getStatusMessage();
+				update(value, max, message);
 			}
 		}
 	}
