@@ -241,11 +241,16 @@ public class DefaultTensorFlowService extends AbstractService implements
 				if (entry == null) break; // All done!
 				final String name = entry.getName();
 				final File outFile = new File(destDir, name);
-				try (final FileOutputStream out = new FileOutputStream(outFile)) {
-					while (true) {
-						final int r = zis.read(buf);
-						if (r < 0) break; // end of entry
-						out.write(buf, 0, r);
+				if (entry.isDirectory()) {
+					outFile.mkdirs();
+				}
+				else {
+					try (final FileOutputStream out = new FileOutputStream(outFile)) {
+						while (true) {
+							final int r = zis.read(buf);
+							if (r < 0) break; // end of entry
+							out.write(buf, 0, r);
+						}
 					}
 				}
 			}
