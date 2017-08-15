@@ -51,6 +51,9 @@ public interface TensorFlowService extends ImageJService {
 
 	Graph loadGraph(Location source, String modelName, String graphPath)
 		throws IOException;
+	
+	Graph loadGraph(final File graph)
+		throws IOException;
 
 	List<String> loadLabels(Location source, String modelName, String labelsPath)
 		throws IOException;
