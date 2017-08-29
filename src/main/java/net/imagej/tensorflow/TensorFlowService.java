@@ -46,12 +46,51 @@ import org.tensorflow.SavedModelBundle;
  */
 public interface TensorFlowService extends ImageJService {
 
+	/**
+	 * Extracts a persisted model from the given location.
+	 * 
+	 * @param source The location of the model, which must be structured as a ZIP
+	 *          archive.
+	 * @param modelName The name of the model by which the source should be
+	 *          unpacked and cached as needed.
+	 * @param tags Optional list of tags passed to
+	 *          {@link SavedModelBundle#load(String, String...)}.
+	 * @return The extracted TensorFlow {@link SavedModelBundle} object.
+	 * @throws IOException If something goes wrong reading or unpacking the
+	 *           archive.
+	 */
 	SavedModelBundle loadModel(Location source, String modelName, String... tags)
 		throws IOException;
 
+	/**
+	 * Extracts a graph from the given location.
+	 * 
+	 * @param source The location of the graph, which must be structured as a ZIP
+	 *          archive.
+	 * @param modelName The name of the model by which the source should be
+	 *          unpacked and cached as needed.
+	 * @param graphPath The name of the .pb file inside the ZIP archive containing
+	 *          the graph.
+	 * @return The extracted TensorFlow {@link Graph} object.
+	 * @throws IOException If something goes wrong reading or unpacking the
+	 *           archive.
+	 */
 	Graph loadGraph(Location source, String modelName, String graphPath)
 		throws IOException;
 
+	/**
+	 * Extracts labels from the given location.
+	 * 
+	 * @param source The location of the labels, which must be structured as a ZIP
+	 *          archive.
+	 * @param modelName The name of the model by which the source should be
+	 *          unpacked and cached as needed.
+	 * @param labelsPath The name of the .txt file inside the ZIP archive
+	 *          containing the labels.
+	 * @return The extracted TensorFlow {@link Graph} object.
+	 * @throws IOException If something goes wrong reading or unpacking the
+	 *           archive.
+	 */
 	List<String> loadLabels(Location source, String modelName, String labelsPath)
 		throws IOException;
 }
