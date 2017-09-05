@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>16.2.0</version>
+		<version>17.0.0</version>
 		<relativePath />
 	</parent>
 
@@ -88,11 +88,6 @@
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>Board of Regents of the University of
 Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
-
-		<tensorflow.version>1.2.0</tensorflow.version>
-		<scijava-common.version>2.65.0</scijava-common.version>
-		<scijava-io-http.version>0.1.0</scijava-io-http.version>
-		<scijava-ui-swing.version>0.9.3</scijava-ui-swing.version>
 	</properties>
 
 	<repositories>
@@ -110,7 +105,6 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 		<dependency>
 			<groupId>org.tensorflow</groupId>
 			<artifactId>tensorflow</artifactId>
-			<version>${tensorflow.version}</version>
 		</dependency>
 		<dependency>
 			<!--
@@ -120,7 +114,6 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 			-->
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-io-http</artifactId>
-			<version>${scijava-io-http.version}</version>
 		</dependency>
 	</dependencies>
 </project>
