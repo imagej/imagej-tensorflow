@@ -30,6 +30,7 @@
 
 package net.imagej.tensorflow;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -76,6 +77,9 @@ public interface TensorFlowService extends ImageJService {
 	 *           archive.
 	 */
 	Graph loadGraph(Location source, String modelName, String graphPath)
+		throws IOException;
+	
+	Graph loadGraph(final File graph)
 		throws IOException;
 
 	/**

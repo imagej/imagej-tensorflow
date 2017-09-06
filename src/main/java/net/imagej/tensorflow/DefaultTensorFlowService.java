@@ -38,6 +38,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -138,6 +140,27 @@ public class DefaultTensorFlowService extends AbstractService implements
 		graphs.put(key, graph);
 
 		return graph;
+	}
+	
+	@Override
+	public Graph loadGraph(final File graph) throws IOException
+	{
+		final String key = graph.getName();
+
+		// If the graph is already cached in memory, return it.
+		if (graphs.containsKey(key)) return graphs.get(key);
+
+		// Read the serialized graph.
+		final byte[] graphDef = Files.readAllBytes(Paths.get(graph.getAbsolutePath()));
+
+		// Convert to a TensorFlow Graph object.
+		final Graph _graph = new Graph();
+		_graph.importGraphDef(graphDef);
+
+		// Cache the result for performance next time.
+		graphs.put(key, _graph);
+
+		return _graph;
 	}
 
 	@Override
