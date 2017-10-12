@@ -638,14 +638,14 @@ public final class Tensors {
 		return shape(new FinalDimensions(tensor.shape()));
 	}
 
-	/** Flips all dimensions d0,d1,...,dn -> dn,...,d1,d0 */
+	/** Flips all dimensions {@code d0,d1,...,dn -> dn,...,d1,d0}. */
 	public static <T extends RealType<T>> Img<T> reverse(Img<T> image)
 	{
 		RandomAccessibleInterval<T> reversed = reverse((RandomAccessibleInterval<T>) image);
 		return ImgView.wrap(reversed, image.factory());
 	}
 
-	/** Flips all dimensions d0,d1,...,dn -> dn,...,d1,d0 */
+	/** Flips all dimensions {@code d0,d1,...,dn -> dn,...,d1,d0}. */
 	public static <T extends RealType<T>> RandomAccessibleInterval<T> reverse(
 		RandomAccessibleInterval<T> image)
 	{
