@@ -118,5 +118,11 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-io-http</artifactId>
 		</dependency>
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
