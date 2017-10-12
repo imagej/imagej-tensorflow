@@ -42,11 +42,11 @@ import net.imagej.tensorflow.GraphBuilder;
 import net.imagej.tensorflow.TensorFlowService;
 import net.imagej.tensorflow.Tensors;
 import net.imglib2.RandomAccessibleInterval;
+import net.imglib2.converter.Converters;
+import net.imglib2.converter.RealFloatConverter;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.real.FloatType;
-import net.imglib2.view.IntervalView;
-import net.imglib2.view.Views;
 
 import org.scijava.ItemIO;
 import org.scijava.command.Command;
@@ -110,7 +110,7 @@ public class LabelImage implements Command {
 				final Tensor image = normalizeImage(inputTensor)
 			)
 			{
-				outputImage = Tensors.img(image);
+				outputImage = Tensors.imgFloat(image, new int[]{ 2, 1, 3, 0 });
 				final float[] labelProbabilities = executeInceptionGraph(graph, image);
 
 				// Sort labels by probability.
@@ -155,11 +155,9 @@ public class LabelImage implements Command {
 	private static <T extends RealType<T>> Tensor loadFromImgLib(
 		final RandomAccessibleInterval<T> image)
 	{
-		// NB: Assumes XYC ordering. TensorFlow wants CXY.
-		// TODO: Need to be smarter about this.
-		final IntervalView<T> imageCXY = //
-			Views.permute(Views.permute(image, 2, 1), 0, 1);
-		return Tensors.tensor(imageCXY);
+		// NB: Assumes XYC ordering. TensorFlow wants YXC.
+		RealFloatConverter<T> converter = new RealFloatConverter<>();
+		return Tensors.tensor(Converters.convert(image, converter, new FloatType()), new int[]{ 1, 0, 2 });
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
