@@ -49,6 +49,8 @@ import org.tensorflow.DataType;
 import org.tensorflow.Tensor;
 import org.tensorflow.types.UInt8;
 
+import com.google.common.base.Function;
+
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
 import net.imglib2.img.Img;
@@ -222,23 +224,23 @@ public class TensorsTest {
 		final int n = dims.length;
 
 		// ByteType
-		testImg2TensorReverseForType(new ArrayImgFactory<ByteType>().create(dims, new ByteType()), n, shape,
+		testImg2TensorReverse(new ArrayImgFactory<ByteType>().create(dims, new ByteType()), n, shape,
 				DataType.UINT8);
 
 		// DoubleType
-		testImg2TensorReverseForType(new ArrayImgFactory<DoubleType>().create(dims, new DoubleType()), n, shape,
+		testImg2TensorReverse(new ArrayImgFactory<DoubleType>().create(dims, new DoubleType()), n, shape,
 				DataType.DOUBLE);
 
 		// FloatType
-		testImg2TensorReverseForType(new ArrayImgFactory<FloatType>().create(dims, new FloatType()), n, shape,
+		testImg2TensorReverse(new ArrayImgFactory<FloatType>().create(dims, new FloatType()), n, shape,
 				DataType.FLOAT);
 
 		// IntType
-		testImg2TensorReverseForType(new ArrayImgFactory<IntType>().create(dims, new IntType()), n, shape,
+		testImg2TensorReverse(new ArrayImgFactory<IntType>().create(dims, new IntType()), n, shape,
 				DataType.INT32);
 
 		// LongType
-		testImg2TensorReverseForType(new ArrayImgFactory<LongType>().create(dims, new LongType()), n, shape,
+		testImg2TensorReverse(new ArrayImgFactory<LongType>().create(dims, new LongType()), n, shape,
 				DataType.INT64);
 	}
 
@@ -251,23 +253,23 @@ public class TensorsTest {
 		final int n = dims.length;
 
 		// ByteType
-		testImg2TensorDirectForType(new ArrayImgFactory<ByteType>().create(dims, new ByteType()), n, dims,
+		testImg2TensorDirect(new ArrayImgFactory<ByteType>().create(dims, new ByteType()), n, dims,
 				DataType.UINT8);
 
 		// DoubleType
-		testImg2TensorDirectForType(new ArrayImgFactory<DoubleType>().create(dims, new DoubleType()), n, dims,
+		testImg2TensorDirect(new ArrayImgFactory<DoubleType>().create(dims, new DoubleType()), n, dims,
 				DataType.DOUBLE);
 
 		// FloatType
-		testImg2TensorDirectForType(new ArrayImgFactory<FloatType>().create(dims, new FloatType()), n, dims,
+		testImg2TensorDirect(new ArrayImgFactory<FloatType>().create(dims, new FloatType()), n, dims,
 				DataType.FLOAT);
 
 		// IntType
-		testImg2TensorDirectForType(new ArrayImgFactory<IntType>().create(dims, new IntType()), n, dims,
+		testImg2TensorDirect(new ArrayImgFactory<IntType>().create(dims, new IntType()), n, dims,
 				DataType.INT32);
 
 		// LongType
-		testImg2TensorDirectForType(new ArrayImgFactory<LongType>().create(dims, new LongType()), n, dims,
+		testImg2TensorDirect(new ArrayImgFactory<LongType>().create(dims, new LongType()), n, dims,
 				DataType.INT64);
 	}
 
@@ -282,28 +284,118 @@ public class TensorsTest {
 		final int n = dims.length;
 
 		// ByteType
-		testImg2TensorMappingForType(new ArrayImgFactory<ByteType>().create(dims, new ByteType()), mapping, n, shape,
+		testImg2TensorMapping(new ArrayImgFactory<ByteType>().create(dims, new ByteType()), mapping, n, shape,
 				DataType.UINT8);
 
 		// DoubleType
-		testImg2TensorMappingForType(new ArrayImgFactory<DoubleType>().create(dims, new DoubleType()), mapping, n,
+		testImg2TensorMapping(new ArrayImgFactory<DoubleType>().create(dims, new DoubleType()), mapping, n,
 				shape, DataType.DOUBLE);
 
 		// FloatType
-		testImg2TensorMappingForType(new ArrayImgFactory<FloatType>().create(dims, new FloatType()), mapping, n, shape,
+		testImg2TensorMapping(new ArrayImgFactory<FloatType>().create(dims, new FloatType()), mapping, n, shape,
 				DataType.FLOAT);
 
 		// IntType
-		testImg2TensorMappingForType(new ArrayImgFactory<IntType>().create(dims, new IntType()), mapping, n, shape,
+		testImg2TensorMapping(new ArrayImgFactory<IntType>().create(dims, new IntType()), mapping, n, shape,
 				DataType.INT32);
 
 		// LongType
-		testImg2TensorMappingForType(new ArrayImgFactory<LongType>().create(dims, new LongType()), mapping, n, shape,
+		testImg2TensorMapping(new ArrayImgFactory<LongType>().create(dims, new LongType()), mapping, n, shape,
 				DataType.INT64);
 	}
 
+	/** Tests the tensor<Type>(RAI) function */
+	@Test
+	public void testImgToTensorReverseTyped() {
+		assertEquals(1, 1);
+
+		final long[] dims = new long[] { 20, 10, 3 };
+		final long[] shape = new long[] { 3, 10, 20 };
+		final int n = dims.length;
+
+		// ByteType
+		testImg2TensorReverseTyped(new ArrayImgFactory<ByteType>().create(dims, new ByteType()), n, shape,
+				UInt8.class, (i) -> Tensors.tensorByte(i));
+
+		// DoubleType
+		testImg2TensorReverseTyped(new ArrayImgFactory<DoubleType>().create(dims, new DoubleType()), n, shape,
+				Double.class, (i) -> Tensors.tensorDouble(i));
+
+		// FloatType
+		testImg2TensorReverseTyped(new ArrayImgFactory<FloatType>().create(dims, new FloatType()), n, shape,
+				Float.class, (i) -> Tensors.tensorFloat(i));
+
+		// IntType
+		testImg2TensorReverseTyped(new ArrayImgFactory<IntType>().create(dims, new IntType()), n, shape,
+				Integer.class, (i) -> Tensors.tensorInt(i));
+
+		// LongType
+		testImg2TensorReverseTyped(new ArrayImgFactory<LongType>().create(dims, new LongType()), n, shape,
+				Long.class, (i) -> Tensors.tensorLong(i));
+	}
+
+	/** Tests the tensor<Type>Direct(RAI) function */
+	@Test
+	public void testImgToTensorDirectTyped() {
+		assertEquals(1, 1);
+
+		final long[] dims = new long[] { 20, 10, 3 };
+		final int n = dims.length;
+
+		// ByteType
+		testImg2TensorDirectTyped(new ArrayImgFactory<ByteType>().create(dims, new ByteType()), n, dims,
+				UInt8.class, (i) -> Tensors.tensorByteDirect(i));
+
+		// DoubleType
+		testImg2TensorDirectTyped(new ArrayImgFactory<DoubleType>().create(dims, new DoubleType()), n, dims,
+				Double.class, (i) -> Tensors.tensorDoubleDirect(i));
+
+		// FloatType
+		testImg2TensorDirectTyped(new ArrayImgFactory<FloatType>().create(dims, new FloatType()), n, dims,
+				Float.class, (i) -> Tensors.tensorFloatDirect(i));
+
+		// IntType
+		testImg2TensorDirectTyped(new ArrayImgFactory<IntType>().create(dims, new IntType()), n, dims,
+				Integer.class, (i) -> Tensors.tensorIntDirect(i));
+
+		// LongType
+		testImg2TensorDirectTyped(new ArrayImgFactory<LongType>().create(dims, new LongType()), n, dims,
+				Long.class, (i) -> Tensors.tensorLongDirect(i));
+	}
+
+	/** Tests the tensor<Type>(RAI, int[]) function */
+	@Test
+	public void testImgToTensorMappingTyped() {
+		assertEquals(1, 1);
+
+		final long[] dims = new long[] { 5, 4, 3, 2 };
+		final int[] mapping = new int[] { 1, 3, 0, 2 }; // A strange mapping
+		final long[] shape = new long[] { 3, 5, 2, 4 };
+		final int n = dims.length;
+
+		// ByteType
+		testImg2TensorMappingTyped(new ArrayImgFactory<ByteType>().create(dims, new ByteType()), mapping, n, shape,
+				UInt8.class, (i) -> Tensors.tensorByte(i, mapping));
+
+		// DoubleType
+		testImg2TensorMappingTyped(new ArrayImgFactory<DoubleType>().create(dims, new DoubleType()), mapping, n, shape,
+				Double.class, (i) -> Tensors.tensorDouble(i, mapping));
+
+		// FloatType
+		testImg2TensorMappingTyped(new ArrayImgFactory<FloatType>().create(dims, new FloatType()), mapping, n, shape,
+				Float.class, (i) -> Tensors.tensorFloat(i, mapping));
+
+		// IntType
+		testImg2TensorMappingTyped(new ArrayImgFactory<IntType>().create(dims, new IntType()), mapping, n, shape,
+				Integer.class, (i) -> Tensors.tensorInt(i, mapping));
+
+		// LongType
+		testImg2TensorMappingTyped(new ArrayImgFactory<LongType>().create(dims, new LongType()), mapping, n, shape,
+				Long.class, (i) -> Tensors.tensorLong(i, mapping));
+	}
+
 	/** Tests the tensor(RAI) function for one image */
-	private <T extends RealType<T>> void testImg2TensorReverseForType(final Img<T> img, final int n, final long[] shape,
+	private <T extends RealType<T>> void testImg2TensorReverse(final Img<T> img, final int n, final long[] shape,
 			final DataType t) {
 		// Put some values to check into the image
 		List<Point> points = createTestPoints(n);
@@ -318,7 +410,7 @@ public class TensorsTest {
 	}
 
 	/** Tests the tensorDirect(RAI) function for one image */
-	private <T extends RealType<T>> void testImg2TensorDirectForType(final Img<T> img, final int n, final long[] shape,
+	private <T extends RealType<T>> void testImg2TensorDirect(final Img<T> img, final int n, final long[] shape,
 			final DataType t) {
 		// Put some values to check into the image
 		List<Point> points = createTestPoints(n);
@@ -333,7 +425,7 @@ public class TensorsTest {
 	}
 
 	/** Tests the tensor(RAI, int[]) function for one image */
-	private <T extends RealType<T>> void testImg2TensorMappingForType(final Img<T> img, final int[] mapping,
+	private <T extends RealType<T>> void testImg2TensorMapping(final Img<T> img, final int[] mapping,
 			final int n, final long[] shape, final DataType t) {
 		// Put some values to check into the image
 		List<Point> points = createTestPoints(n);
@@ -343,6 +435,51 @@ public class TensorsTest {
 		assertArrayEquals(shape, tensor.shape());
 		assertEquals(n, tensor.numDimensions());
 		assertEquals(t, tensor.dataType());
+		checkPointsTensor(tensor, mapping, points);
+	}
+
+	/** Tests the tensor<Type>(RAI) typed function for one image */
+	private <T extends RealType<T>, U> void testImg2TensorReverseTyped(final Img<T> img, final int n, final long[] shape,
+			Class<U> t, final Function<Img<T>, Tensor<U>> converter) {
+		// Put some values to check into the image
+		List<Point> points = createTestPoints(n);
+		markPoints(img, points);
+
+		Tensor<U> tensor = converter.apply(img);
+
+		assertArrayEquals(shape, tensor.shape());
+		assertEquals(n, tensor.numDimensions());
+		assertEquals(DataType.fromClass(t), tensor.dataType());
+		checkPointsTensor(tensor, IntStream.range(0, n).map(i -> n - 1 - i).toArray(), points);
+	}
+
+	/** Tests the tensor<Type>Direct(RAI) typed function for one image */
+	private <T extends RealType<T>, U> void testImg2TensorDirectTyped(final Img<T> img, final int n, final long[] shape,
+			Class<U> t, final Function<Img<T>, Tensor<U>> converter) {
+		// Put some values to check into the image
+		List<Point> points = createTestPoints(n);
+		markPoints(img, points);
+
+		Tensor<U> tensor = converter.apply(img);
+
+		assertArrayEquals(shape, tensor.shape());
+		assertEquals(n, tensor.numDimensions());
+		assertEquals(DataType.fromClass(t), tensor.dataType());
+		checkPointsTensor(tensor, IntStream.range(0, n).toArray(), points);
+	}
+
+	/** Tests the tensor<Type>(RAI, int[]) typed function for one image */
+	private <T extends RealType<T>, U> void testImg2TensorMappingTyped(final Img<T> img, final int[] mapping, final int n,
+			final long[] shape, Class<U> t, final Function<Img<T>, Tensor<U>> converter) {
+		// Put some values to check into the image
+		List<Point> points = createTestPoints(n);
+		markPoints(img, points);
+
+		Tensor<U> tensor = converter.apply(img);
+
+		assertArrayEquals(shape, tensor.shape());
+		assertEquals(n, tensor.numDimensions());
+		assertEquals(DataType.fromClass(t), tensor.dataType());
 		checkPointsTensor(tensor, mapping, points);
 	}
 
