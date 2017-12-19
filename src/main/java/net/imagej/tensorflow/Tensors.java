@@ -40,6 +40,7 @@ import java.util.stream.IntStream;
 
 import org.tensorflow.DataType;
 import org.tensorflow.Tensor;
+import org.tensorflow.types.UInt8;
 
 import net.imglib2.Cursor;
 import net.imglib2.Dimensions;
@@ -523,7 +524,7 @@ public final class Tensors {
 	{
 		final byte[] value = byteArray(image);
 		ByteBuffer buffer = ByteBuffer.wrap(value);
-		return Tensor.create(DataType.UINT8, shape(image), buffer);
+		return Tensor.create(UInt8.class, shape(image), buffer);
 	}
 
 	/**

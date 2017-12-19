@@ -47,6 +47,7 @@ import java.util.stream.IntStream;
 import org.junit.Test;
 import org.tensorflow.DataType;
 import org.tensorflow.Tensor;
+import org.tensorflow.types.UInt8;
 
 import net.imglib2.Point;
 import net.imglib2.RandomAccess;
@@ -79,7 +80,7 @@ public class TensorsTest {
 		// Create Tensors of different type and convert them to images
 		ByteBuffer dataByte = ByteBuffer.allocateDirect(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataByte.put(i, (byte) (int) v));
-		Tensor tensorByte = Tensor.create(DataType.UINT8, shape, dataByte);
+		Tensor tensorByte = Tensor.create(UInt8.class, shape, dataByte);
 		Img<ByteType> imgByte = Tensors.imgByte(tensorByte);
 
 		DoubleBuffer dataDouble = DoubleBuffer.allocate(size);
@@ -124,7 +125,7 @@ public class TensorsTest {
 		// Create Tensors of different type and convert them to images
 		ByteBuffer dataByte = ByteBuffer.allocateDirect(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataByte.put(i, (byte) (int) v));
-		Tensor tensorByte = Tensor.create(DataType.UINT8, shape, dataByte);
+		Tensor tensorByte = Tensor.create(UInt8.class, shape, dataByte);
 		Img<ByteType> imgByte = Tensors.imgByteDirect(tensorByte);
 
 		DoubleBuffer dataDouble = DoubleBuffer.allocate(size);
@@ -170,7 +171,7 @@ public class TensorsTest {
 		// Create Tensors of different type and convert them to images
 		ByteBuffer dataByte = ByteBuffer.allocateDirect(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataByte.put(i, (byte) (int) v));
-		Tensor tensorByte = Tensor.create(DataType.UINT8, shape, dataByte);
+		Tensor tensorByte = Tensor.create(UInt8.class, shape, dataByte);
 		Img<ByteType> imgByte = Tensors.imgByte(tensorByte, mapping);
 
 		DoubleBuffer dataDouble = DoubleBuffer.allocate(size);
