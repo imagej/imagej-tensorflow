@@ -611,6 +611,211 @@ public final class Tensors {
 		return Tensor.create(shape(image), buffer);
 	}
 
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given byte image.
+	 * <p>
+	 * Note that this will use the backing RAI's primitive array when one is
+	 * available and no dimensions where swapped. Otherwise a copy will be made.
+	 * </p>
+	 * @param image The image which should be put into the Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor<UInt8> tensorByte(
+		final RandomAccessibleInterval<ByteType> image, final int[] dimOrder)
+	{
+		return tensorByte(reverse(reorder(image, dimOrder)));
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given double image.
+	 * <p>
+	 * Note that this will use the backing RAI's primitive array when one is
+	 * available and no dimensions where swapped. Otherwise a copy will be made.
+	 * </p>
+	 * @param image The image which should be put into the Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor<Double> tensorDouble(
+		final RandomAccessibleInterval<DoubleType> image, final int[] dimOrder)
+	{
+		return tensorDouble(reverse(reorder(image, dimOrder)));
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given float image.
+	 * <p>
+	 * Note that this will use the backing RAI's primitive array when one is
+	 * available and no dimensions where swapped. Otherwise a copy will be made.
+	 * </p>
+	 * @param image The image which should be put into the Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor<Float> tensorFloat(
+		final RandomAccessibleInterval<FloatType> image, final int[] dimOrder)
+	{
+		return tensorFloat(reverse(reorder(image, dimOrder)));
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given int image.
+	 * <p>
+	 * Note that this will use the backing RAI's primitive array when one is
+	 * available and no dimensions where swapped. Otherwise a copy will be made.
+	 * </p>
+	 * @param image The image which should be put into the Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor<Integer> tensorInt(
+		final RandomAccessibleInterval<IntType> image, final int[] dimOrder)
+	{
+		return tensorInt(reverse(reorder(image, dimOrder)));
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given long image.
+	 * <p>
+	 * Note that this will use the backing RAI's primitive array when one is
+	 * available and no dimensions where swapped. Otherwise a copy will be made.
+	 * </p>
+	 * @param image The image which should be put into the Tensor.
+	 * @param dimOrder Defines the mapping of the dimensions between the image
+	 *          and the Tensor where the index corresponds to the dimension
+	 *          in the image and the value corresponds to the dimension in the
+	 *          Tensor. TODO Example?
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor<Long> tensorLong(
+		final RandomAccessibleInterval<LongType> image, final int[] dimOrder)
+	{
+		return tensorLong(reverse(reorder(image, dimOrder)));
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given byte image.
+	 * <p>
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting Tensor will have a shape directly corresponding to the
+	 * dimensions of the image. Make sure the dimensions are as you want
+	 * them in TensorFlow. See {@link #tensorByte(RandomAccessibleInterval)} and
+	 * {@link #tensorByte(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * </p><p>
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * </p>
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor<UInt8> tensorByteDirect(
+		final RandomAccessibleInterval<ByteType> image)
+	{
+		return tensorByte(reverse(image));
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given double image.
+	 * <p>
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting Tensor will have a shape directly corresponding to the
+	 * dimensions of the image. Make sure the dimensions are as you want
+	 * them in TensorFlow. See {@link #tensorDouble(RandomAccessibleInterval)} and
+	 * {@link #tensorDouble(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * </p><p>
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * </p>
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor<Double> tensorDoubleDirect(
+		final RandomAccessibleInterval<DoubleType> image)
+	{
+		return tensorDouble(reverse(image));
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given float image.
+	 * <p>
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting Tensor will have a shape directly corresponding to the
+	 * dimensions of the image. Make sure the dimensions are as you want
+	 * them in TensorFlow. See {@link #tensorFloat(RandomAccessibleInterval)} and
+	 * {@link #tensorFloat(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * </p><p>
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * </p>
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor<Float> tensorFloatDirect(
+		final RandomAccessibleInterval<FloatType> image)
+	{
+		return tensorFloat(reverse(image));
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given int image.
+	 * <p>
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting Tensor will have a shape directly corresponding to the
+	 * dimensions of the image. Make sure the dimensions are as you want
+	 * them in TensorFlow. See {@link #tensorInt(RandomAccessibleInterval)} and
+	 * {@link #tensorInt(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * </p><p>
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * </p>
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor<Integer> tensorIntDirect(
+		final RandomAccessibleInterval<IntType> image)
+	{
+		return tensorInt(reverse(image));
+	}
+
+	/**
+	 * Creates a TensorFlow Tensor containing data from the given long image.
+	 * <p>
+	 * Note that this _does_ adjust the dimensions. This means that
+	 * the resulting Tensor will have a shape directly corresponding to the
+	 * dimensions of the image. Make sure the dimensions are as you want
+	 * them in TensorFlow. See {@link #tensorLong(RandomAccessibleInterval)} and
+	 * {@link #tensorLong(RandomAccessibleInterval, int[])} if you want to handle
+	 * dimensions differently.
+	 * </p><p>
+	 * Also note that this will use the backing RAI's primitive array when one is
+	 * available. Otherwise a copy will be made.
+	 * </p>
+	 * @param image The image which should be put into the Tensor.
+	 * @return A Tensor containing the data of the image.
+	 */
+	public static Tensor<Long> tensorLongDirect(
+		final RandomAccessibleInterval<LongType> image)
+	{
+		return tensorLong(reverse(image));
+	}
+
 	// --------- DIMENSIONAL HELPER METHODS ---------
 
 	/**
