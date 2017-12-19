@@ -80,27 +80,27 @@ public class TensorsTest {
 		// Create Tensors of different type and convert them to images
 		ByteBuffer dataByte = ByteBuffer.allocateDirect(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataByte.put(i, (byte) (int) v));
-		Tensor tensorByte = Tensor.create(UInt8.class, shape, dataByte);
+		Tensor<UInt8> tensorByte = Tensor.create(UInt8.class, shape, dataByte);
 		Img<ByteType> imgByte = Tensors.imgByte(tensorByte);
 
 		DoubleBuffer dataDouble = DoubleBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataDouble.put(i, v));
-		Tensor tensorDouble = Tensor.create(shape, dataDouble);
+		Tensor<Double> tensorDouble = Tensor.create(shape, dataDouble);
 		Img<DoubleType> imgDouble = Tensors.imgDouble(tensorDouble);
 
 		FloatBuffer dataFloat = FloatBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataFloat.put(i, v));
-		Tensor tensorFloat = Tensor.create(shape, dataFloat);
+		Tensor<Float> tensorFloat = Tensor.create(shape, dataFloat);
 		Img<FloatType> imgFloat = Tensors.imgFloat(tensorFloat);
 
 		IntBuffer dataInt = IntBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataInt.put(i, v));
-		Tensor tensorInt = Tensor.create(shape, dataInt);
+		Tensor<Integer> tensorInt = Tensor.create(shape, dataInt);
 		Img<IntType> imgInt = Tensors.imgInt(tensorInt);
 
 		LongBuffer dataLong = LongBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataLong.put(i, v));
-		Tensor tensorLong = Tensor.create(shape, dataLong);
+		Tensor<Long> tensorLong = Tensor.create(shape, dataLong);
 		Img<LongType> imgLong = Tensors.imgLong(tensorLong);
 
 		// Check all created images
@@ -125,27 +125,27 @@ public class TensorsTest {
 		// Create Tensors of different type and convert them to images
 		ByteBuffer dataByte = ByteBuffer.allocateDirect(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataByte.put(i, (byte) (int) v));
-		Tensor tensorByte = Tensor.create(UInt8.class, shape, dataByte);
+		Tensor<UInt8> tensorByte = Tensor.create(UInt8.class, shape, dataByte);
 		Img<ByteType> imgByte = Tensors.imgByteDirect(tensorByte);
 
 		DoubleBuffer dataDouble = DoubleBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataDouble.put(i, v));
-		Tensor tensorDouble = Tensor.create(shape, dataDouble);
+		Tensor<Double> tensorDouble = Tensor.create(shape, dataDouble);
 		Img<DoubleType> imgDouble = Tensors.imgDoubleDirect(tensorDouble);
 
 		FloatBuffer dataFloat = FloatBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataFloat.put(i, v));
-		Tensor tensorFloat = Tensor.create(shape, dataFloat);
+		Tensor<Float> tensorFloat = Tensor.create(shape, dataFloat);
 		Img<FloatType> imgFloat = Tensors.imgFloatDirect(tensorFloat);
 
 		IntBuffer dataInt = IntBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataInt.put(i, v));
-		Tensor tensorInt = Tensor.create(shape, dataInt);
+		Tensor<Integer> tensorInt = Tensor.create(shape, dataInt);
 		Img<IntType> imgInt = Tensors.imgIntDirect(tensorInt);
 
 		LongBuffer dataLong = LongBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataLong.put(i, v));
-		Tensor tensorLong = Tensor.create(shape, dataLong);
+		Tensor<Long> tensorLong = Tensor.create(shape, dataLong);
 		Img<LongType> imgLong = Tensors.imgLongDirect(tensorLong);
 
 		// Check all created images
@@ -171,27 +171,27 @@ public class TensorsTest {
 		// Create Tensors of different type and convert them to images
 		ByteBuffer dataByte = ByteBuffer.allocateDirect(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataByte.put(i, (byte) (int) v));
-		Tensor tensorByte = Tensor.create(UInt8.class, shape, dataByte);
+		Tensor<UInt8> tensorByte = Tensor.create(UInt8.class, shape, dataByte);
 		Img<ByteType> imgByte = Tensors.imgByte(tensorByte, mapping);
 
 		DoubleBuffer dataDouble = DoubleBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataDouble.put(i, v));
-		Tensor tensorDouble = Tensor.create(shape, dataDouble);
+		Tensor<Double> tensorDouble = Tensor.create(shape, dataDouble);
 		Img<DoubleType> imgDouble = Tensors.imgDouble(tensorDouble, mapping);
 
 		FloatBuffer dataFloat = FloatBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataFloat.put(i, v));
-		Tensor tensorFloat = Tensor.create(shape, dataFloat);
+		Tensor<Float> tensorFloat = Tensor.create(shape, dataFloat);
 		Img<FloatType> imgFloat = Tensors.imgFloat(tensorFloat, mapping);
 
 		IntBuffer dataInt = IntBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataInt.put(i, v));
-		Tensor tensorInt = Tensor.create(shape, dataInt);
+		Tensor<Integer> tensorInt = Tensor.create(shape, dataInt);
 		Img<IntType> imgInt = Tensors.imgInt(tensorInt, mapping);
 
 		LongBuffer dataLong = LongBuffer.allocate(size);
 		execForPointsWithBufferIndex(shape, mapping, points, (i, v) -> dataLong.put(i, v));
-		Tensor tensorLong = Tensor.create(shape, dataLong);
+		Tensor<Long> tensorLong = Tensor.create(shape, dataLong);
 		Img<LongType> imgLong = Tensors.imgLong(tensorLong, mapping);
 
 		// Check all created images
@@ -309,7 +309,7 @@ public class TensorsTest {
 		List<Point> points = createTestPoints(n);
 		markPoints(img, points);
 
-		Tensor tensor = Tensors.tensor(img);
+		Tensor<?> tensor = Tensors.tensor(img);
 
 		assertArrayEquals(shape, tensor.shape());
 		assertEquals(n, tensor.numDimensions());
@@ -324,7 +324,7 @@ public class TensorsTest {
 		List<Point> points = createTestPoints(n);
 		markPoints(img, points);
 
-		Tensor tensor = Tensors.tensorDirect(img);
+		Tensor<?> tensor = Tensors.tensorDirect(img);
 
 		assertArrayEquals(shape, tensor.shape());
 		assertEquals(n, tensor.numDimensions());
@@ -338,7 +338,7 @@ public class TensorsTest {
 		// Put some values to check into the image
 		List<Point> points = createTestPoints(n);
 		markPoints(img, points);
-		Tensor tensor = Tensors.tensor(img, mapping);
+		Tensor<?> tensor = Tensors.tensor(img, mapping);
 
 		assertArrayEquals(shape, tensor.shape());
 		assertEquals(n, tensor.numDimensions());
@@ -397,7 +397,7 @@ public class TensorsTest {
 	}
 
 	/** Checks the given points for the given tensor */
-	private void checkPointsTensor(final Tensor tensor, final int[] mapping, final List<Point> points) {
+	private void checkPointsTensor(final Tensor<?> tensor, final int[] mapping, final List<Point> points) {
 		switch (tensor.dataType()) {
 		case UINT8: {
 			ByteBuffer buffer = ByteBuffer.allocate(tensor.numElements());
