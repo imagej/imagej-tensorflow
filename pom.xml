@@ -91,6 +91,9 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 
 		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
+
+		<!-- Override tensorflow version -->
+		<tensorflow.version>1.4.0</tensorflow.version>
 	</properties>
 
 	<repositories>

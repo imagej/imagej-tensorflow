@@ -106,8 +106,8 @@ public class LabelImage implements Command {
 			log.info("Loaded graph and " + labels.size() + " labels");
 
 			try (
-				final Tensor inputTensor = loadFromImgLib(inputImage);
-				final Tensor image = normalizeImage(inputTensor)
+				final Tensor<Float> inputTensor = loadFromImgLib(inputImage);
+				final Tensor<Float> image = normalizeImage(inputTensor)
 			)
 			{
 				outputImage = Tensors.imgFloat(image, new int[]{ 2, 1, 3, 0 });
@@ -148,23 +148,23 @@ public class LabelImage implements Command {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private static Tensor loadFromImgLib(final Dataset d) {
+	private static Tensor<Float> loadFromImgLib(final Dataset d) {
 		return loadFromImgLib((RandomAccessibleInterval) d.getImgPlus());
 	}
 
-	private static <T extends RealType<T>> Tensor loadFromImgLib(
+	private static <T extends RealType<T>> Tensor<Float> loadFromImgLib(
 		final RandomAccessibleInterval<T> image)
 	{
 		// NB: Assumes XYC ordering. TensorFlow wants YXC.
 		RealFloatConverter<T> converter = new RealFloatConverter<>();
-		return Tensors.tensor(Converters.convert(image, converter, new FloatType()), new int[]{ 1, 0, 2 });
+		return Tensors.tensorFloat(Converters.convert(image, converter, new FloatType()), new int[]{ 1, 0, 2 });
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------
 	// All the code below was essentially copied verbatim from:
 	// https://github.com/tensorflow/tensorflow/blob/e8f2aad0c0502fde74fc629f5b13f04d5d206700/tensorflow/java/src/main/java/org/tensorflow/examples/LabelImage.java
 	// -----------------------------------------------------------------------------------------------------------------
-	private static Tensor normalizeImage(final Tensor t) {
+	private static Tensor<Float> normalizeImage(final Tensor<Float> t) {
 		try (Graph g = new Graph()) {
 			final GraphBuilder b = new GraphBuilder(g);
 			// Some constants specific to the pre-trained model at:
@@ -181,27 +181,30 @@ public class LabelImage implements Command {
 			// Since the graph is being constructed once per execution here, we can
 			// use a constant for the input image. If the graph were to be re-used for
 			// multiple input images, a placeholder would have been more appropriate.
-			final Output input = g.opBuilder("Const", "input")//
+			final Output<Float> input = g.opBuilder("Const", "input")//
 				.setAttr("dtype", t.dataType())//
 				.setAttr("value", t).build().output(0);
-			final Output output = b.div(b.sub(b.resizeBilinear(b.expandDims(//
+			final Output<Float> output = b.div(b.sub(b.resizeBilinear(b.expandDims(//
 				input, //
 				b.constant("make_batch", 0)), //
 				b.constant("size", new int[] { H, W })), //
 				b.constant("mean", mean)), //
 				b.constant("scale", scale));
 			try (Session s = new Session(g)) {
-				return s.runner().fetch(output.op().name()).run().get(0);
+				@SuppressWarnings("unchecked")
+				Tensor<Float> result = (Tensor<Float>) s.runner().fetch(output.op().name()).run().get(0);
+				return result;
 			}
 		}
 	}
 
 	private static float[] executeInceptionGraph(final Graph g,
-		final Tensor image)
+		final Tensor<Float> image)
 	{
 		try (
 			final Session s = new Session(g);
-			final Tensor result = s.runner().feed("input", image)//
+			@SuppressWarnings("unchecked")
+			final Tensor<Float> result = (Tensor<Float>) s.runner().feed("input", image)//
 				.fetch("output").run().get(0)
 		)
 		{
