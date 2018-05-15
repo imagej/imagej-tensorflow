@@ -66,6 +66,8 @@ import org.scijava.util.FileUtils;
 import org.tensorflow.Graph;
 import org.tensorflow.SavedModelBundle;
 
+import scala.tools.jline_embedded.internal.Log;
+
 /**
  * Default implementation of {@link TensorFlowService}.
  *
@@ -197,8 +199,16 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 		final DiskLocationCache cache = new DiskLocationCache();
 
 		// Cache the models into $IMAGEJ_DIR/models.
-		final File baseDir = appService.getApp().getBaseDirectory();
-		final File cacheBase = new File(baseDir, "models");
+		final File cacheBase;
+
+		System.out.println(System.getProperty(CACHE_DIR_PROPERTY_KEY));
+		if (System.getProperty(CACHE_DIR_PROPERTY_KEY) != null) {
+			cacheBase = new File(System.getProperty(CACHE_DIR_PROPERTY_KEY));
+		} else {
+			final File baseDir = appService.getApp().getBaseDirectory();
+			cacheBase = new File(baseDir, "models");
+		}
+
 		if (!cacheBase.exists())
 			cacheBase.mkdirs();
 		cache.setBaseDirectory(cacheBase);
