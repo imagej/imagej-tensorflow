@@ -30,6 +30,7 @@
 
 package net.imagej.tensorflow;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -92,5 +93,20 @@ public interface TensorFlowService extends ImageJService {
 	 *           archive.
 	 */
 	List<String> loadLabels(Location source, String modelName, String labelsPath)
+		throws IOException;
+	
+	/**
+	 * Extracts labels from the given location.
+	 * 
+	 * @param source The location of the labels, which must be structured as a ZIP
+	 *          archive.
+	 * @param modelName The name of the model by which the source should be
+	 *          unpacked and cached as needed.
+	 * @param filePath The name of the file inside the ZIP archive.
+	 * @return A {@link File} object.
+	 * @throws IOException If something goes wrong reading or unpacking the
+	 *           archive.
+	 */
+	File loadFile(final Location source, final String modelName, final String filePath)
 		throws IOException;
 }

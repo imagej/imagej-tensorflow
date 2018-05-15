@@ -167,6 +167,14 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 		return labels;
 	}
 
+	@Override
+	public File loadFile(final Location source, final String modelName, final String filePath) throws IOException {
+		// Get a local directory with unpacked model data.
+		final File modelDir = modelDir(source, modelName);
+
+		return new File(modelDir, filePath);
+	}
+
 	// -- Disposable methods --
 
 	@Override
