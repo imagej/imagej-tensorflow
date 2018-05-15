@@ -72,9 +72,9 @@ import org.tensorflow.SavedModelBundle;
  * @author Curtis Rueden
  */
 @Plugin(type = Service.class)
-public class DefaultTensorFlowService extends AbstractService implements
-	TensorFlowService
-{
+public class DefaultTensorFlowService extends AbstractService implements TensorFlowService {
+
+	private static String CACHE_DIR_PROPERTY_KEY = "imagej.models.dir";
 
 	@Parameter
 	private DownloadService downloadService;
@@ -97,32 +97,31 @@ public class DefaultTensorFlowService extends AbstractService implements
 	// -- TensorFlowService methods --
 
 	@Override
-	public SavedModelBundle loadModel(final Location source,
-		final String modelName, final String... tags) throws IOException
-	{
+	public SavedModelBundle loadModel(final Location source, final String modelName, final String... tags)
+			throws IOException {
 		final String key = modelName + "/" + Arrays.toString(tags);
 
 		// If the model is already cached in memory, return it.
-		if (models.containsKey(key)) return models.get(key);
+		if (models.containsKey(key))
+			return models.get(key);
 
 		// Get a local directory with unpacked model data.
 		final File modelDir = modelDir(source, modelName);
 
 		// Load the saved model.
 		final SavedModelBundle model = //
-			SavedModelBundle.load(modelDir.getAbsolutePath(), tags);
+				SavedModelBundle.load(modelDir.getAbsolutePath(), tags);
 
 		return model;
 	}
 
 	@Override
-	public Graph loadGraph(final Location source, final String modelName,
-		final String graphPath) throws IOException
-	{
+	public Graph loadGraph(final Location source, final String modelName, final String graphPath) throws IOException {
 		final String key = modelName + "/" + graphPath;
 
 		// If the graph is already cached in memory, return it.
-		if (graphs.containsKey(key)) return graphs.get(key);
+		if (graphs.containsKey(key))
+			return graphs.get(key);
 
 		// Get a local directory with unpacked model data.
 		final File modelDir = modelDir(source, modelName);
@@ -141,13 +140,13 @@ public class DefaultTensorFlowService extends AbstractService implements
 	}
 
 	@Override
-	public List<String> loadLabels(final Location source, final String modelName,
-		final String labelsPath) throws IOException
-	{
+	public List<String> loadLabels(final Location source, final String modelName, final String labelsPath)
+			throws IOException {
 		final String key = modelName + "/" + labelsPath;
 
 		// If the labels are already cached in memory, return them.
-		if (labelses.containsKey(key)) return labelses.get(key);
+		if (labelses.containsKey(key))
+			return labelses.get(key);
 
 		// Get a local directory with unpacked model data.
 		final File modelDir = modelDir(source, modelName);
@@ -156,9 +155,7 @@ public class DefaultTensorFlowService extends AbstractService implements
 		final File labelsFile = new File(modelDir, labelsPath);
 		final List<String> labels;
 		try (final BufferedReader labelsReader = new BufferedReader(
-			new InputStreamReader(new FileInputStream(labelsFile),
-				StandardCharsets.UTF_8)))
-		{
+				new InputStreamReader(new FileInputStream(labelsFile), StandardCharsets.UTF_8))) {
 			labels = labelsReader.lines().collect(Collectors.toList());
 		}
 
@@ -191,7 +188,8 @@ public class DefaultTensorFlowService extends AbstractService implements
 	// -- Helper methods --
 
 	private DiskLocationCache modelCache() {
-		if (modelCache == null) initModelCache();
+		if (modelCache == null)
+			initModelCache();
 		return modelCache;
 	}
 
@@ -201,7 +199,8 @@ public class DefaultTensorFlowService extends AbstractService implements
 		// Cache the models into $IMAGEJ_DIR/models.
 		final File baseDir = appService.getApp().getBaseDirectory();
 		final File cacheBase = new File(baseDir, "models");
-		if (!cacheBase.exists()) cacheBase.mkdirs();
+		if (!cacheBase.exists())
+			cacheBase.mkdirs();
 		cache.setBaseDirectory(cacheBase);
 
 		modelCache = cache;
@@ -210,31 +209,27 @@ public class DefaultTensorFlowService extends AbstractService implements
 	// TODO - Migrate unpacking logic into the DownloadService proper.
 	// And consider whether/how to avoid using so much temporary space.
 
-	private File modelDir(final Location source, final String modelName)
-		throws IOException
-	{
+	private File modelDir(final Location source, final String modelName) throws IOException {
 		final File modelDir = new File(modelCache().getBaseDirectory(), modelName);
-		if (!modelDir.exists()) try {
-			downloadAndUnpackResource(source, modelDir);
-		}
-		catch (final InterruptedException | ExecutionException exc) {
-			throw new IOException(exc);
-		}
+		if (!modelDir.exists())
+			try {
+				downloadAndUnpackResource(source, modelDir);
+			} catch (final InterruptedException | ExecutionException exc) {
+				throw new IOException(exc);
+			}
 		return modelDir;
 	}
 
 	/** Downloads and unpacks a zipped resource. */
-	private void downloadAndUnpackResource(final Location source,
-		final File destDir) throws InterruptedException, ExecutionException,
-		IOException
-	{
+	private void downloadAndUnpackResource(final Location source, final File destDir)
+			throws InterruptedException, ExecutionException, IOException {
 		// Allocate a dynamic byte array.
 		final ByteArray byteArray = new ByteArray(1024 * 1024);
 
 		// Download the compressed model into the byte array.
 		final BytesLocation bytes = new BytesLocation(byteArray);
 		final Task task = //
-			downloadService.download(source, bytes, modelCache()).task();
+				downloadService.download(source, bytes, modelCache()).task();
 		final StatusUpdater statusUpdater = new StatusUpdater(task);
 		context().inject(statusUpdater);
 		task.waitFor();
@@ -242,26 +237,27 @@ public class DefaultTensorFlowService extends AbstractService implements
 		// Extract the contents of the compressed data to the model cache.
 		final byte[] buf = new byte[64 * 1024];
 		final ByteArrayInputStream bais = new ByteArrayInputStream(//
-			byteArray.getArray(), 0, byteArray.size());
+				byteArray.getArray(), 0, byteArray.size());
 		destDir.mkdirs();
 		try (final ZipInputStream zis = new ZipInputStream(bais)) {
 			while (true) {
 				final ZipEntry entry = zis.getNextEntry();
-				if (entry == null) break; // All done!
+				if (entry == null)
+					break; // All done!
 				final String name = entry.getName();
 				statusUpdater.update("Unpacking " + name);
 				final File outFile = new File(destDir, name);
 				if (entry.isDirectory()) {
 					outFile.mkdirs();
-				}
-				else {
+				} else {
 					final int size = (int) entry.getSize();
 					int len = 0;
 					try (final FileOutputStream out = new FileOutputStream(outFile)) {
 						while (true) {
 							statusUpdater.update(len, size, "Unpacking " + name);
 							final int r = zis.read(buf);
-							if (r < 0) break; // end of entry
+							if (r < 0)
+								break; // end of entry
 							len += r;
 							out.write(buf, 0, r);
 						}
@@ -296,12 +292,13 @@ public class DefaultTensorFlowService extends AbstractService implements
 
 		public void update(final int value, final int max, final String message) {
 			final long timestamp = System.currentTimeMillis();
-			if (timestamp < lastUpdate + 100) return; // Avoid excessive updates.
+			if (timestamp < lastUpdate + 100)
+				return; // Avoid excessive updates.
 			lastUpdate = timestamp;
 
 			final double percent = 100.0 * value / max;
 			statusService.showStatus(value, max, message + ": " + //
-				formatter.format(percent) + "%");
+					formatter.format(percent) + "%");
 		}
 
 		public void clear() {
