@@ -93,7 +93,7 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 		<releaseProfiles>deploy-to-imagej</releaseProfiles>
 
 		<!-- Override tensorflow version -->
-		<tensorflow.version>1.6.0</tensorflow.version>
+		<tensorflow.version>1.8.0</tensorflow.version>
 	</properties>
 
 	<repositories>
