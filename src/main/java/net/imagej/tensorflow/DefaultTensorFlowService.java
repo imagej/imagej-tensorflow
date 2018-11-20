@@ -89,7 +89,7 @@ public class DefaultTensorFlowService extends AbstractService implements
 	private final Map<String, Graph> graphs = new HashMap<>();
 
 	/** Labels which are already cached in memory. */
-	private final Map<String, List<String>> labelses = new HashMap<>();
+	private final Map<String, List<String>> labels = new HashMap<>();
 
 	/** Disk cache defining where compressed models are stored locally. */
 	private DiskLocationCache modelCache;
@@ -147,7 +147,7 @@ public class DefaultTensorFlowService extends AbstractService implements
 		final String key = modelName + "/" + labelsPath;
 
 		// If the labels are already cached in memory, return them.
-		if (labelses.containsKey(key)) return labelses.get(key);
+		if (labels.containsKey(key)) return labels.get(key);
 
 		// Get a local directory with unpacked model data.
 		final File modelDir = modelDir(source, modelName);
@@ -163,7 +163,7 @@ public class DefaultTensorFlowService extends AbstractService implements
 		}
 
 		// Cache the result for performance next time.
-		labelses.put(key, labels);
+		labels.put(key, labels);
 
 		return labels;
 	}
@@ -185,7 +185,7 @@ public class DefaultTensorFlowService extends AbstractService implements
 		graphs.clear();
 
 		// Dispose labels.
-		labelses.clear();
+		labels.clear();
 	}
 
 	// -- Helper methods --
