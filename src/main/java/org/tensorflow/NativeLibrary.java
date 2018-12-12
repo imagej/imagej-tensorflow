@@ -47,9 +47,9 @@ final class NativeLibrary {
       System.getProperty("org.tensorflow.NativeLibrary.DEBUG") != null;
   private static final String JNI_LIBNAME = "tensorflow_jni";
   public enum LibMode {
-    GPU, CPU
+    GPU, CPU, AUTO
   }
-  private static LibMode mode  = LibMode.CPU;
+  private static LibMode mode  = LibMode.AUTO;
 
   public static LibMode getMode() {
     return mode;
@@ -80,11 +80,15 @@ final class NativeLibrary {
         maybeAdjustForMacOS(System.mapLibraryName("tensorflow_framework"));
     final String frameworkResourceName = makeResourceName(frameworkLibName);
     log("frameworkResourceName: " + frameworkResourceName);
+    loadNativeResources(jniLibName, frameworkLibName, jniResourceName, frameworkResourceName, false);
+  }
+
+  private static void loadNativeResources(String jniLibName, String frameworkLibName, String jniResourceName, String frameworkResourceName, boolean gpuFailed) {
     InputStream jniResource = null;
     InputStream frameworkResource = null;
     try {
-      jniResource = loadResource(jniResourceName);
-      frameworkResource = loadResource(frameworkResourceName);
+      jniResource = loadResource(jniResourceName, gpuFailed);
+      frameworkResource = loadResource(frameworkResourceName, gpuFailed);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -117,14 +121,18 @@ final class NativeLibrary {
                 + " is not built to depend on it.");
       }
       System.load(extractResource(jniResource, jniLibName, tempDirectory));
-    } catch (IOException e) {
+    } catch (IOException | UnsatisfiedLinkError e) {
+      if(mode.equals(LibMode.AUTO) && !gpuFailed) {
+        loadNativeResources(jniLibName, frameworkLibName, jniResourceName, frameworkResourceName, true);
+        return;
+      }
       throw new UnsatisfiedLinkError(
           String.format(
               "Unable to extract native library into a temporary file (%s)", e.toString()));
     }
   }
 
-  private static InputStream loadResource(String resourceName) throws IOException {
+  private static InputStream loadResource(String resourceName, boolean gpuFailed) throws IOException {
     Enumeration<URL> resources = null;
     try {
       resources = NativeLibrary.class.getClassLoader().getResources(resourceName);
@@ -142,7 +150,7 @@ final class NativeLibrary {
       }
     }
     URL lib = cpuLib;
-    if(mode.equals(LibMode.GPU)) {
+    if(mode.equals(NativeLibrary.LibMode.GPU) || (mode.equals(NativeLibrary.LibMode.AUTO) && !gpuFailed)) {
       lib = gpuLib;
     }
     log("Loading lib " + lib);
