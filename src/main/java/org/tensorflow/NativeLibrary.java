@@ -19,6 +19,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Collections;
+import java.util.Enumeration;
 
 /**
  * Helper class for loading the TensorFlow Java native library.
@@ -43,6 +46,18 @@ final class NativeLibrary {
   private static final boolean DEBUG =
       System.getProperty("org.tensorflow.NativeLibrary.DEBUG") != null;
   private static final String JNI_LIBNAME = "tensorflow_jni";
+  public enum LibMode {
+    GPU, CPU
+  }
+  private static LibMode mode  = LibMode.CPU;
+
+  public static LibMode getMode() {
+    return mode;
+  }
+
+  public static void setMode(final LibMode mode) {
+    NativeLibrary.mode = mode;
+  }
 
   public static void load() {
     if (isLoaded() || tryLoadLibrary()) {
@@ -57,19 +72,22 @@ final class NativeLibrary {
       return;
     }
     // Native code is not present, perhaps it has been packaged into the .jar file containing this.
-    // Extract the JNI library itself
+    // Extract the JNI library itself and the JNI's dependency
     final String jniLibName = System.mapLibraryName(JNI_LIBNAME);
     final String jniResourceName = makeResourceName(jniLibName);
     log("jniResourceName: " + jniResourceName);
-    final InputStream jniResource =
-        NativeLibrary.class.getClassLoader().getResourceAsStream(jniResourceName);
-    // Extract the JNI's dependency
     final String frameworkLibName =
         maybeAdjustForMacOS(System.mapLibraryName("tensorflow_framework"));
     final String frameworkResourceName = makeResourceName(frameworkLibName);
     log("frameworkResourceName: " + frameworkResourceName);
-    final InputStream frameworkResource =
-        NativeLibrary.class.getClassLoader().getResourceAsStream(frameworkResourceName);
+    InputStream jniResource = null;
+    InputStream frameworkResource = null;
+    try {
+      jniResource = loadResource(jniResourceName);
+      frameworkResource = loadResource(frameworkResourceName);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
     // Do not complain if the framework resource wasn't found. This may just mean that we're
     // building with --config=monolithic (in which case it's not needed and not included).
     if (jniResource == null) {
@@ -104,6 +122,31 @@ final class NativeLibrary {
           String.format(
               "Unable to extract native library into a temporary file (%s)", e.toString()));
     }
+  }
+
+  private static InputStream loadResource(String resourceName) throws IOException {
+    Enumeration<URL> resources = null;
+    try {
+      resources = NativeLibrary.class.getClassLoader().getResources(resourceName);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    URL gpuLib = null;
+    URL cpuLib = null;
+    for(URL url : Collections.list(resources)) {
+      if(url.getPath().contains("org/tensorflow/libtensorflow_jni_gpu/")) {
+        gpuLib = url;
+      }
+      if(url.getPath().contains("org/tensorflow/libtensorflow_jni/")) {
+        cpuLib = url;
+      }
+    }
+    URL lib = cpuLib;
+    if(mode.equals(LibMode.GPU)) {
+      lib = gpuLib;
+    }
+    log("Loading lib " + lib);
+    return lib.openStream();
   }
 
   private static boolean tryLoadLibrary() {
