@@ -49,7 +49,16 @@ final class NativeLibrary {
   public enum LibMode {
     GPU, CPU, AUTO
   }
-  private static LibMode mode  = LibMode.AUTO;
+  private static LibMode mode  = modeFromString(System.getProperty("org.tensorflow.NativeLibrary.MODE"));
+
+  private static LibMode modeFromString(String modeStr) {
+    if(modeStr == null) return LibMode.AUTO;
+    switch(modeStr) {
+      case "gpu": return LibMode.GPU;
+      case "cpu": return LibMode.CPU;
+      default: return LibMode.AUTO;
+    }
+  }
 
   public static LibMode getMode() {
     return mode;
