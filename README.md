@@ -20,10 +20,3 @@ mvn -Pexec
 This requires [Maven](https://maven.apache.org/install.html).  Typically `brew
 install maven` on OS X, `apt-get install maven` on Ubuntu, or [detailed
 instructions](https://maven.apache.org/install.html) otherwise.
-
-## Caveats
-
-The code here is still a proof of concept. It has some inefficiencies that
-will later be improved upon. For example, the TensorFlow model is loaded
-on each invocation of the command instead of being loaded once and cached
-for repeated use.
