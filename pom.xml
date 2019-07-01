@@ -91,9 +91,6 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
-
-		<!-- Override tensorflow version -->
-		<tensorflow.version>1.6.0</tensorflow.version>
 	</properties>
 
 	<repositories>
