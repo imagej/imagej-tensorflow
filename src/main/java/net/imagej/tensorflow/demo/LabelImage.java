@@ -97,6 +97,11 @@ public class LabelImage implements Command {
 
 	@Override
 	public void run() {
+
+		tensorFlowService.loadLibrary();
+		if(!tensorFlowService.getStatus().isLoaded()) return;
+		log.info("Version of TensorFlow: " + tensorFlowService.getTensorFlowVersion());
+
 		try {
 			final HTTPLocation source = new HTTPLocation(INCEPTION_MODEL_URL);
 			final Graph graph = tensorFlowService.loadGraph(source, MODEL_NAME,
