@@ -31,10 +31,8 @@
 package net.imagej.tensorflow;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -45,10 +43,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import net.imagej.tensorflow.util.TensorFlowUtil;
+import net.imagej.tensorflow.util.UnpackUtil;
 import org.scijava.app.AppService;
 import org.scijava.app.StatusService;
 import org.scijava.download.DiskLocationCache;
@@ -370,37 +367,8 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 		final StatusUpdater statusUpdater = new StatusUpdater(task);
 		context().inject(statusUpdater);
 		task.waitFor();
+		UnpackUtil.unZip(destDir, byteArray, logService, statusUpdater.statusService);
 
-		// Extract the contents of the compressed data to the model cache.
-		final byte[] buf = new byte[64 * 1024];
-		final ByteArrayInputStream bais = new ByteArrayInputStream(//
-			byteArray.getArray(), 0, byteArray.size());
-		destDir.mkdirs();
-		try (final ZipInputStream zis = new ZipInputStream(bais)) {
-			while (true) {
-				final ZipEntry entry = zis.getNextEntry();
-				if (entry == null) break; // All done!
-				final String name = entry.getName();
-				statusUpdater.update("Unpacking " + name);
-				final File outFile = new File(destDir, name);
-				if (entry.isDirectory()) {
-					outFile.mkdirs();
-				}
-				else {
-					final int size = (int) entry.getSize();
-					int len = 0;
-					try (final FileOutputStream out = new FileOutputStream(outFile)) {
-						while (true) {
-							statusUpdater.update(len, size, "Unpacking " + name);
-							final int r = zis.read(buf);
-							if (r < 0) break; // end of entry
-							len += r;
-							out.write(buf, 0, r);
-						}
-					}
-				}
-			}
-		}
 		statusUpdater.clear();
 	}
 

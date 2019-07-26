@@ -32,15 +32,13 @@ package net.imagej.tensorflow.util;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.scijava.log.Logger;
+import org.scijava.app.StatusService;
+import org.scijava.log.LogService;
+import org.scijava.util.ByteArray;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -55,11 +53,10 @@ public final class UnpackUtil {
 
 	private UnpackUtil(){}
 
-	public static void unGZip(String tarGzFile, String outputDir, String symLinkOutputDir, Logger logger) throws IOException {
-		logger.info("Unpacking " + tarGzFile + " to " + outputDir);
-		File folder = new File(outputDir);
-		if (!folder.exists()) {
-			folder.mkdirs();
+	public static void unGZip(String tarGzFile, File output, String symLinkOutputDir, LogService log, StatusService status) throws IOException {
+		log("Unpacking " + tarGzFile + " to " + output, log , status);
+		if (!output.exists()) {
+			output.mkdirs();
 		}
 
 		String tarFileName = tarGzFile.replace(".gz", "");
@@ -70,6 +67,7 @@ public final class UnpackUtil {
 		int len;
 		while ((len = ginstream.read(buf)) > 0) {
 			outstream.write(buf, 0, len);
+
 		}
 		ginstream.close();
 		outstream.close();
@@ -77,73 +75,101 @@ public final class UnpackUtil {
 		TarArchiveEntry entry;
 		while ((entry = myTarFile.getNextTarEntry()) != null) {
 			if (entry.isSymbolicLink() || entry.isLink()) {
-				Path source = Paths.get(outputDir + entry.getName());
-				Path target = Paths.get(symLinkOutputDir + entry.getLinkName());
+				Path source = new File(output, entry.getName()).toPath();
+				Path target = new File(symLinkOutputDir, entry.getLinkName()).toPath();
+				deleteIfExists(source.toAbsolutePath().toString());
 				if (entry.isSymbolicLink()) {
-					logger.info("Creating symbolic link: " + source + " -> " + target);
+					log("Creating symbolic link: " + source + " -> " + target, log, status);
 					Files.createSymbolicLink(source, target);
 				} else {
-					logger.info("Creating link: " + source + " -> " + target);
+					log("Creating link: " + source + " -> " + target, log, status);
 					Files.createLink(source, target);
 				}
 			} else {
-				File output = new File(folder + "/" + entry.getName());
-				if (!output.getParentFile().exists()) {
-					output.getParentFile().mkdirs();
+				File outEntry = new File(output + "/" + entry.getName());
+				if (!outEntry.getParentFile().exists()) {
+					outEntry.getParentFile().mkdirs();
 				}
-				if (output.isDirectory())
+				if (outEntry.isDirectory()) {
 					continue;
-				byte[] content = new byte[(int) entry.getSize()];
-				int offset = 0;
-				myTarFile.read(content, offset, content.length - offset);
-				logger.info("Writing " + output);
-				FileOutputStream outputStream = new FileOutputStream(output);
-				outputStream.write(content);
-				outputStream.close();
+				}
+				log("Writing " + outEntry, log, status);
+				final byte[] buf1 = new byte[64 * 1024];
+				final int size1 = (int) entry.getSize();
+				int len1 = 0;
+				try (final FileOutputStream outEntryStream = new FileOutputStream(outEntry)) {
+					while (true) {
+						status.showStatus(len1, size1, "Unpacking " + entry.getName());
+						final int r = myTarFile.read(buf1, 0, buf1.length);
+						if (r < 0) break; // end of entry
+						len1 += r;
+						outEntryStream.write(buf1, 0, r);
+					}
+				}
 			}
 		}
+		status.clearStatus();
 		myTarFile.close();
 		File tarFile = new File(tarFileName);
 		tarFile.delete();
 	}
 
-	public static void unZip(String zipFile, String outputFolder, Logger logger) throws IOException {
-
-		logger.info("Unpacking " + zipFile + " to " + outputFolder);
-
-		byte[] buffer = new byte[1024];
-
-		File folder = new File(outputFolder);
-		if (!folder.exists()) {
-			folder.mkdirs();
+	public static void unZip(String zipFile, File output, LogService log, StatusService status) throws IOException {
+		log("Unpacking " + zipFile + " to " + output, log, status);
+		output.mkdirs();
+		try (final ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile))) {
+			unZip(zis, output, log, status);
 		}
+	}
 
-		ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
-		ZipEntry ze = zis.getNextEntry();
+	public static void unZip(File output, ByteArray byteArray, LogService log, StatusService status) throws IOException {
+		// Extract the contents of the compressed data to the model cache.
+		final ByteArrayInputStream bais = new ByteArrayInputStream(//
+				byteArray.getArray(), 0, byteArray.size());
+		output.mkdirs();
+		try (final ZipInputStream zis = new ZipInputStream(bais)) {
+			unZip(zis, output, log, status);
+		}
+	}
 
-		while (ze != null) {
-
-			String fileName = ze.getName().replace("Fiji.app/", "");
-			File newFile = new File(outputFolder + File.separator + fileName);
-
-			logger.info("Writing " + newFile.getAbsoluteFile());
-
-			new File(newFile.getParent()).mkdirs();
-
-			FileOutputStream fos = new FileOutputStream(newFile);
-
-			int len;
-			while ((len = zis.read(buffer)) > 0) {
-				fos.write(buffer, 0, len);
+	private static void unZip(ZipInputStream zis, File output, LogService log, StatusService status) throws IOException {
+		final byte[] buf = new byte[64 * 1024];
+		while (true) {
+			final ZipEntry entry = zis.getNextEntry();
+			if (entry == null) break; // All done!
+			final String name = entry.getName();
+			log("Unpacking " + name, log, status);
+			final File outFile = new File(output, name);
+			if (entry.isDirectory()) {
+				outFile.mkdirs();
 			}
-
-			fos.close();
-			ze = zis.getNextEntry();
-
+			else {
+				final int size = (int) entry.getSize();
+				int len = 0;
+				try (final FileOutputStream out = new FileOutputStream(outFile)) {
+					while (true) {
+						status.showStatus(len, size, "Unpacking " + name);
+						final int r = zis.read(buf);
+						if (r < 0) break; // end of entry
+						len += r;
+						out.write(buf, 0, r);
+					}
+				}
+			}
 		}
+		status.clearStatus();
+	}
 
-		zis.closeEntry();
-		zis.close();
+	private static void deleteIfExists(String filePath) {
+		File file = new File(filePath);
+		if(file.exists()) {
+			file.delete();
+		}
+	}
+
+	private static void log(String msg, LogService log, StatusService status) {
+		log.info(msg);
+		status.showStatus(msg);
 	}
 
 }

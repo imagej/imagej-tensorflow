@@ -33,7 +33,11 @@ package net.imagej.tensorflow.ui;
 import net.imagej.tensorflow.util.TensorFlowUtil;
 import net.imagej.tensorflow.util.UnpackUtil;
 import org.scijava.app.AppService;
+import org.scijava.app.StatusService;
 import org.scijava.log.LogService;
+import org.scijava.plugin.Parameter;
+import org.scijava.plugin.Plugin;
+import org.scijava.plugin.SciJavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,16 +56,16 @@ import java.nio.file.StandardCopyOption;
  */
 class TensorFlowInstallationHandler {
 
-	private final AppService appService;
+	@Parameter
+	private AppService appService;
 
-	private final LogService logService;
+	@Parameter
+	private LogService logService;
+	
+	@Parameter
+	private StatusService statusService;
 
 	private static final String DOWNLOADDIR = "downloads/";
-
-	TensorFlowInstallationHandler(final AppService appService, final LogService logService) {
-		this.appService = appService;
-		this.logService = logService;
-	}
 
 	/**
 	 * Checks for a specific version whether it is downloaded and installed.
@@ -96,7 +100,6 @@ class TensorFlowInstallationHandler {
 		}
 		updateCacheStatus(version);
 		if (!version.isActive()) {
-			TensorFlowUtil.removeNativeLibraries(getRoot(), logService);
 			installVersion(version);
 		}
 	}
@@ -121,14 +124,14 @@ class TensorFlowInstallationHandler {
 
 		logService.info("Installing " + version);
 
-		String outputDir = TensorFlowUtil.getUpdateLibDir(getRoot()) + version.getPlatform() + File.separator;
+		File outputDir = new File(TensorFlowUtil.getUpdateLibDir(getRoot()) + version.getPlatform() + File.separator);
 
 		if (version.getLocalPath().contains(".zip")) {
-			UnpackUtil.unZip(version.getLocalPath(), outputDir, logService);
+			UnpackUtil.unZip(version.getLocalPath(), outputDir, logService, statusService);
 			TensorFlowUtil.writeNativeVersionFile(getRoot(), version.getPlatform(), version);
 		} else if (version.getLocalPath().endsWith(".tar.gz")) {
 			String symLinkOutputDir = TensorFlowUtil.getLibDir(getRoot()) + version.getPlatform() + File.separator;;
-			UnpackUtil.unGZip(version.getLocalPath(), outputDir, symLinkOutputDir, logService);
+			UnpackUtil.unGZip(version.getLocalPath(), outputDir, symLinkOutputDir, logService, statusService);
 			TensorFlowUtil.writeNativeVersionFile(getRoot(), version.getPlatform(), version);
 		}
 
@@ -136,6 +139,8 @@ class TensorFlowInstallationHandler {
 			// using default JAR version. nothing to do.
 			logService.info("Using default JAR TensorFlow version.");
 		}
+
+		statusService.clearStatus();
 
 		TensorFlowUtil.getCrashFile(getRoot()).delete();
 	}

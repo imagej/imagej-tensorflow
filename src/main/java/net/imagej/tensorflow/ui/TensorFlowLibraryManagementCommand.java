@@ -35,6 +35,7 @@ import net.imagej.tensorflow.TensorFlowService;
 import net.imagej.tensorflow.TensorFlowVersion;
 import net.imagej.tensorflow.util.TensorFlowUtil;
 import net.imagej.updater.util.UpdaterUtil;
+import org.scijava.Context;
 import org.scijava.app.AppService;
 import org.scijava.command.Command;
 import org.scijava.log.LogService;
@@ -65,6 +66,9 @@ public class TensorFlowLibraryManagementCommand implements Command {
 	@Parameter
 	private LogService logService;
 
+	@Parameter
+	private Context context;
+
 	DownloadableTensorFlowVersion currentVersion;
 	List<DownloadableTensorFlowVersion> availableVersions = new ArrayList<>();
 
@@ -75,7 +79,8 @@ public class TensorFlowLibraryManagementCommand implements Command {
 	@Override
 	public void run() {
 		tensorFlowService.loadLibrary();
-		installationHandler = new TensorFlowInstallationHandler(appService, logService);
+		installationHandler = new TensorFlowInstallationHandler();
+		context.inject(installationHandler);
 		final TensorFlowLibraryManagementFrame frame = new TensorFlowLibraryManagementFrame(tensorFlowService, installationHandler);
 		frame.init();
 		initAvailableVersions();
