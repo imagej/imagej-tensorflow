@@ -115,6 +115,7 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
+		<apache-commons-compress.version>1.18</apache-commons-compress.version>
 	</properties>
 
 	<repositories>
@@ -142,16 +143,16 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-io-http</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>${apache-commons-compress.version}</version>
+		</dependency>
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-compress</artifactId>
-			<version>1.11</version>
 		</dependency>
 	</dependencies>
 </project>
