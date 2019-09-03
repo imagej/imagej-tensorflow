@@ -31,10 +31,8 @@
 package net.imagej.tensorflow;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -45,9 +43,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
+import net.imagej.tensorflow.util.TensorFlowUtil;
+import net.imagej.tensorflow.util.UnpackUtil;
 import org.scijava.app.AppService;
 import org.scijava.app.StatusService;
 import org.scijava.download.DiskLocationCache;
@@ -55,6 +53,7 @@ import org.scijava.download.DownloadService;
 import org.scijava.event.EventHandler;
 import org.scijava.io.location.BytesLocation;
 import org.scijava.io.location.Location;
+import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.service.AbstractService;
@@ -65,6 +64,7 @@ import org.scijava.util.ByteArray;
 import org.scijava.util.FileUtils;
 import org.tensorflow.Graph;
 import org.tensorflow.SavedModelBundle;
+import org.tensorflow.TensorFlow;
 
 /**
  * Default implementation of {@link TensorFlowService}.
@@ -72,8 +72,7 @@ import org.tensorflow.SavedModelBundle;
  * @author Curtis Rueden
  */
 @Plugin(type = Service.class)
-public class DefaultTensorFlowService extends AbstractService implements
-	TensorFlowService
+public class DefaultTensorFlowService extends AbstractService implements TensorFlowService
 {
 
 	@Parameter
@@ -81,6 +80,9 @@ public class DefaultTensorFlowService extends AbstractService implements
 
 	@Parameter
 	private AppService appService;
+
+	@Parameter
+	private LogService logService;
 
 	/** Models which are already cached in memory. */
 	private final Map<String, SavedModelBundle> models = new HashMap<>();
@@ -93,6 +95,11 @@ public class DefaultTensorFlowService extends AbstractService implements
 
 	/** Disk cache defining where compressed models are stored locally. */
 	private DiskLocationCache modelCache;
+
+	private TensorFlowLibraryStatus tfStatus = TensorFlowLibraryStatus.notLoaded();
+
+	/** The loaded TensorFlow version. Will be initialized once in loadLibrary */
+	private TensorFlowVersion tfVersion;
 
 	// -- TensorFlowService methods --
 
@@ -168,6 +175,128 @@ public class DefaultTensorFlowService extends AbstractService implements
 		return labels;
 	}
 
+	/**
+	 * Loads the TensorFlow library.
+	 */
+	@Override
+	public synchronized void loadLibrary() {
+		// Do not try to load the library twice
+		if (tfStatus.triedLoading())
+			return;
+
+		// Handle a previous crash
+		boolean jniCrashed = false;
+		boolean jarCrashed = false;
+		if (getCrashFile().exists()) {
+			logService.warn("Crash file exists: " + getCrashFile().getAbsolutePath());
+			if (getNativeVersionFile().exists()) {
+				// The jni library crashed the JVM: We should test if the jar library works
+				jniCrashed = true;
+				tfStatus = TensorFlowLibraryStatus.crashed("TensorFlow native library crashed: ");
+				logService.warn("The JVM seems to have crashed when loading the TensorFlow native library.");
+				logService.warn("Trying to delete TensorFlow libraries from " + TensorFlowUtil.getLibDir(getRoot()));
+				TensorFlowUtil.removeNativeLibraries(getRoot(), logService);
+				logService.warn("Trying to load the library provided by this JAR instead:" + TensorFlowUtil.getTensorFlowJAR());
+			} else {
+				// The jar library crashed the JVM: We should not try to load it again
+				jarCrashed = true;
+				tfStatus = TensorFlowLibraryStatus.crashed("TensorFlow JAR crashed: " + TensorFlowUtil.getTensorFlowJAR());
+				logService.warn("The JVM seems to have crashed when loading the TensorFlow JAR library: " + TensorFlowUtil.getTensorFlowJAR());
+				logService.warn("Please run Edit > Options > TensorFlow and choose another version or delete the crash file to load the JAR library again.");
+			}
+		}
+
+		if(!jarCrashed) {
+
+			createCrashFile();
+
+			if (jniCrashed) {
+				// jni crashed, ignore jni and load jar
+				tfStatus =  loadFromJAR();
+			} else {
+				tfStatus = loadFromLib();
+				if(!tfStatus.isFailed() && !tfStatus.isLoaded()) {
+					// no jni present, load jar
+					tfStatus = loadFromJAR();
+				}
+			}
+
+			deleteCrashFile();
+
+			if(!tfStatus.isLoaded() && !tfStatus.isFailed()) {
+				tfStatus = TensorFlowLibraryStatus.failed("Could not find any TensorFlow library.");
+			}
+		}
+
+	}
+
+	/**
+	 * Tries to load the TensorFlow library from Fiji.app/lib folder.
+	 * In case of success, {@link #tfVersion} is set to the loaded TensorFlow version
+	 * @return the {@link TensorFlowLibraryStatus} indicating success or failure of loading the library
+	 */
+	private TensorFlowLibraryStatus loadFromLib() {
+		try {
+			System.loadLibrary("tensorflow_jni");
+			try {
+				tfVersion = TensorFlowUtil.readNativeVersionFile(getRoot());
+			} catch (IOException e) {
+				// could not read native version file, unknown version origin
+				logService.warn(e.getMessage());
+				tfVersion = new TensorFlowVersion(TensorFlow.version(), null, null, null);
+			}
+			return TensorFlowLibraryStatus.loaded("Using native TensorFlow version: " + tfVersion);
+		} catch (final UnsatisfiedLinkError e) {
+			if(e.getMessage().contains("no tensorflow_jni")) {
+				logService.info("No TF library found in " + TensorFlowUtil.getLibDir(getRoot()) + ".");
+				return TensorFlowLibraryStatus.notLoaded();
+			} else {
+				try {
+					TensorFlowVersion failingVersion = TensorFlowUtil.readNativeVersionFile(getRoot());
+					logService.warn("Could not load native TF library " + failingVersion + " " + e.getMessage());
+				} catch (IOException e1) {
+					logService.warn("Could not load native TF library (unknown version) " + e.getMessage());
+				}
+				// TODO maybe ask if the native lib should be deleted from /lib
+				return TensorFlowLibraryStatus.failed( e.getMessage());
+			}
+		}
+	}
+
+	/**
+	 * Tries to load the TensorFlow library from the TensorFlow JAR in the class path.
+	 * In case of success, {@link #tfVersion} is set to the loaded TensorFlow version
+	 * @return the {@link TensorFlowLibraryStatus} indicating success or failure of loading the library
+	 */
+	private TensorFlowLibraryStatus loadFromJAR() {
+		// Calling a native method will load the library from the jar
+		try {
+			tfVersion = getJarVersion();
+			return TensorFlowLibraryStatus.loaded("Using default TensorFlow version from JAR: " + tfVersion);
+		} catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
+			logService.warn("Could not load JAR TF library: " + e.getMessage());
+			return TensorFlowLibraryStatus.failed(e.getMessage());
+		}
+	}
+
+	private File getNativeVersionFile() {
+		return TensorFlowUtil.getNativeVersionFile(getRoot());
+	}
+
+	private File getCrashFile() {
+		return TensorFlowUtil.getCrashFile(getRoot());
+	}
+
+	@Override
+	public synchronized TensorFlowVersion getTensorFlowVersion() {
+		return tfVersion;
+	}
+
+	@Override
+	public synchronized TensorFlowLibraryStatus getStatus() {
+		return tfStatus;
+	}
+
 	// -- Disposable methods --
 
 	@Override
@@ -238,38 +367,39 @@ public class DefaultTensorFlowService extends AbstractService implements
 		final StatusUpdater statusUpdater = new StatusUpdater(task);
 		context().inject(statusUpdater);
 		task.waitFor();
+		UnpackUtil.unZip(destDir, byteArray, logService, statusUpdater.statusService);
 
-		// Extract the contents of the compressed data to the model cache.
-		final byte[] buf = new byte[64 * 1024];
-		final ByteArrayInputStream bais = new ByteArrayInputStream(//
-			byteArray.getArray(), 0, byteArray.size());
-		destDir.mkdirs();
-		try (final ZipInputStream zis = new ZipInputStream(bais)) {
-			while (true) {
-				final ZipEntry entry = zis.getNextEntry();
-				if (entry == null) break; // All done!
-				final String name = entry.getName();
-				statusUpdater.update("Unpacking " + name);
-				final File outFile = new File(destDir, name);
-				if (entry.isDirectory()) {
-					outFile.mkdirs();
-				}
-				else {
-					final int size = (int) entry.getSize();
-					int len = 0;
-					try (final FileOutputStream out = new FileOutputStream(outFile)) {
-						while (true) {
-							statusUpdater.update(len, size, "Unpacking " + name);
-							final int r = zis.read(buf);
-							if (r < 0) break; // end of entry
-							len += r;
-							out.write(buf, 0, r);
-						}
-					}
-				}
-			}
-		}
 		statusUpdater.clear();
+	}
+
+	private void createCrashFile() {
+		try {
+			getCrashFile().getParentFile().mkdirs();
+			getCrashFile().createNewFile();
+		} catch (final IOException e) {
+			logService.warn(e);
+		}
+	}
+
+	private void deleteCrashFile() {
+		final File crashFile = getCrashFile();
+		if(crashFile.exists()) crashFile.delete();
+	}
+
+	private TensorFlowVersion getJarVersion() {
+		TensorFlowVersion version = TensorFlowUtil.versionFromClassPathJAR();
+		String loadedVersion = TensorFlow.version();
+		if(!version.getVersionNumber().equals(loadedVersion)) {
+			logService.warn("Loaded TensorFlow version is " + loadedVersion
+					+ " whereas the TensorFlow class in the classpath suggests version "
+					+ version.getVersionNumber() + ".");
+			return new TensorFlowVersion(loadedVersion, null, null, null);
+		}
+		return version;
+	}
+
+	private String getRoot() {
+		return appService.getApp().getBaseDirectory().getAbsolutePath();
 	}
 
 	/**

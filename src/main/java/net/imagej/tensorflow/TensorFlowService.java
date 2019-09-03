@@ -30,14 +30,13 @@
 
 package net.imagej.tensorflow;
 
-import java.io.IOException;
-import java.util.List;
-
 import net.imagej.ImageJService;
-
 import org.scijava.io.location.Location;
 import org.tensorflow.Graph;
 import org.tensorflow.SavedModelBundle;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * Service for working with TensorFlow.
@@ -93,4 +92,20 @@ public interface TensorFlowService extends ImageJService {
 	 */
 	List<String> loadLabels(Location source, String modelName, String labelsPath)
 		throws IOException;
+
+	/**
+	 * Loads the TensorFlow Library.
+	 */
+	void loadLibrary();
+
+	/**
+	 * @return the TensorFlow version which is currently loaded.
+	 *         <code>null</code> if no version is loaded.
+	 */
+	TensorFlowVersion getTensorFlowVersion();
+
+	/**
+	 * @return Status information about the TensorFlow library (e.g. whether it crashed the application)
+	 */
+	TensorFlowLibraryStatus getStatus();
 }

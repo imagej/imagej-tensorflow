@@ -43,6 +43,30 @@
 				<role>maintainer</role>
 			</roles>
 		</developer>
+		<developer>
+			<id>HedgehogCode</id>
+			<name>Benjamin Wilhelm</name>
+			<url>https://imagej.net/User:Bwilhelm</url>
+			<roles>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>frauzufall</id>
+			<name>Deborah Schmidt</name>
+			<url>https://imagej.net/User:Frauzufall</url>
+			<roles>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+		</developer>
 	</developers>
 	<contributors>
 		<contributor>
@@ -123,6 +147,11 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>1.11</version>
 		</dependency>
 	</dependencies>
 </project>
