@@ -35,6 +35,7 @@ import org.scijava.io.location.Location;
 import org.tensorflow.Graph;
 import org.tensorflow.SavedModelBundle;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -108,4 +109,18 @@ public interface TensorFlowService extends ImageJService {
 	 * @return Status information about the TensorFlow library (e.g. whether it crashed the application)
 	 */
 	TensorFlowLibraryStatus getStatus();
+
+	/**
+	 * Extracts a file from the given location.
+	 * 
+	 * @param source The location of the ZIP archive.
+	 * @param modelName The name of the model by which the source should be
+	 *          unpacked and cached as needed.
+	 * @param filePath The name of the file inside the ZIP archive.
+	 * @return A {@link File} object.
+	 * @throws IOException If something goes wrong reading or unpacking the
+	 *           archive.
+	 */
+	File loadFile(final Location source, final String modelName, final String filePath)
+		throws IOException;
 }

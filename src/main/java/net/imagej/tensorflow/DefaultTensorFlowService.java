@@ -101,6 +101,8 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 	/** The loaded TensorFlow version. Will be initialized once in loadLibrary */
 	private TensorFlowVersion tfVersion;
 
+	private static String CACHE_DIR_PROPERTY_KEY = "imagej.tensorflow.models.dir";
+
 	// -- TensorFlowService methods --
 
 	@Override
@@ -300,6 +302,14 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 		return tfStatus;
 	}
 
+	@Override
+	public File loadFile(final Location source, final String modelName, final String filePath) throws IOException {
+		// Get a local directory with unpacked model data.
+		final File modelDir = modelDir(source, modelName);
+
+		return new File(modelDir, filePath);
+	}
+
 	// -- Disposable methods --
 
 	@Override
@@ -331,9 +341,20 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 		final DiskLocationCache cache = new DiskLocationCache();
 
 		// Cache the models into $IMAGEJ_DIR/models.
-		final File baseDir = appService.getApp().getBaseDirectory();
-		final File cacheBase = new File(baseDir, "models");
-		if (!cacheBase.exists()) cacheBase.mkdirs();
+		final File cacheBase;
+
+		String modelCacheDir = System.getProperty(CACHE_DIR_PROPERTY_KEY);
+		if (modelCacheDir != null) {
+			cacheBase = new File(modelCacheDir);
+		} else {
+			final File baseDir = appService.getApp().getBaseDirectory();
+			cacheBase = new File(baseDir, "models");
+		}
+		logService.info("Caching TensorFlow models to " + cacheBase.getAbsolutePath());
+
+		if (!cacheBase.exists())
+			cacheBase.mkdirs();
+
 		cache.setBaseDirectory(cacheBase);
 
 		modelCache = cache;
