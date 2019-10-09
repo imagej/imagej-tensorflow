@@ -85,7 +85,7 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 	private LogService logService;
 
 	/** Models which are already cached in memory. */
-	private final Map<String, SavedModelBundle> models = new HashMap<>();
+	private final Map<String, CachedModelBundle> models = new HashMap<>();
 
 	/** Graphs which are already cached in memory. */
 	private final Map<String, Graph> graphs = new HashMap<>();
@@ -105,21 +105,34 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 
 	// -- TensorFlowService methods --
 
+	@Deprecated
 	@Override
 	public SavedModelBundle loadModel(final Location source,
+		final String modelName, final String... tags) throws IOException
+	{
+		// Get a local directory with unpacked model data.
+		final File modelDir = modelDir(source, modelName);
+		return SavedModelBundle.load(modelDir.getAbsolutePath(), tags);
+	}
+
+	@Override
+	public CachedModelBundle loadCachedModel(final Location source,
 		final String modelName, final String... tags) throws IOException
 	{
 		final String key = modelName + "/" + Arrays.toString(tags);
 
 		// If the model is already cached in memory, return it.
-		if (models.containsKey(key)) return models.get(key);
+		if (models.containsKey(key)) {
+			CachedModelBundle model = models.get(key);
+			if(!model.isClosed()) return model;
+		}
 
 		// Get a local directory with unpacked model data.
 		final File modelDir = modelDir(source, modelName);
 
 		// Load the saved model.
-		final SavedModelBundle model = //
-			SavedModelBundle.load(modelDir.getAbsolutePath(), tags);
+		final CachedModelBundle model = //
+			new CachedModelBundle(modelDir.getAbsolutePath(), tags);
 
 		// Cache the result for performance next time.
 		models.put(key, model);
@@ -315,7 +328,7 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 	@Override
 	public void dispose() {
 		// Dispose models.
-		for (final SavedModelBundle model : models.values()) {
+		for (final CachedModelBundle model : models.values()) {
 			model.close();
 		}
 		models.clear();
@@ -425,7 +438,6 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 	private String getRoot() {
 		return appService.getApp().getBaseDirectory().getAbsolutePath();
 	}
-
 	/**
 	 * A dumb class which passes task events on to the {@link StatusService}.
 	 * Eventually, this sort of logic will be built in to SciJava Common. But for

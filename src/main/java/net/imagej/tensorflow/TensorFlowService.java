@@ -58,9 +58,29 @@ public interface TensorFlowService extends ImageJService {
 	 * @return The extracted TensorFlow {@link SavedModelBundle} object.
 	 * @throws IOException If something goes wrong reading or unpacking the
 	 *           archive.
+	 * Deprecated - use {@link #loadCachedModel(Location, String, String...)} instead.
 	 */
+	@Deprecated
 	SavedModelBundle loadModel(Location source, String modelName, String... tags)
 		throws IOException;
+
+	/**
+	 * Extracts a persisted model from the given location.
+	 * Returns it from cache in case it was already loaded.
+	 *
+	 * @param source The location of the model, which must be structured as a ZIP
+	 *          archive.
+	 * @param modelName The name of the model by which the source should be
+	 *          unpacked and cached as needed.
+	 * @param tags Optional list of tags passed to
+	 *          {@link SavedModelBundle#load(String, String...)}.
+	 * @return The extracted TensorFlow {@link SavedModelBundle} object
+	 *           wrapped by a {@link CachedModelBundle}.
+	 * @throws IOException If something goes wrong reading or unpacking the
+	 *           archive.
+	 */
+	CachedModelBundle loadCachedModel(Location source, String modelName, String... tags)
+			throws IOException;
 
 	/**
 	 * Extracts a graph from the given location.
