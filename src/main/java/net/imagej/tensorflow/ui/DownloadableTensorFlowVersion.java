@@ -127,6 +127,7 @@ class DownloadableTensorFlowVersion extends TensorFlowVersion {
 	 */
 	public String getOriginDescription() {
 		if(downloaded) return localPath;
+		if(url == null) return "unknown source";
 		return url.toString();
 	}
 
