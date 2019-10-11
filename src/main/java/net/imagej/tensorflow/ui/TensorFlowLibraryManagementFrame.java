@@ -154,7 +154,12 @@ class TensorFlowLibraryManagementFrame extends JFrame {
 		for( DownloadableTensorFlowVersion version : availableVersions) {
 			JRadioButton btn = new JRadioButton(version.toString());
 			btn.setToolTipText(version.getOriginDescription());
-			btn.setSelected(version.isActive());
+			if(version.isActive()) {
+				btn.setSelected(true);
+				if(tensorFlowService.getStatus().isFailed()) {
+					btn.setForeground(Color.red);
+				}
+			}
 			btn.setOpaque(false);
 			versionGroup.add(btn);
 			buttons.add(btn);
