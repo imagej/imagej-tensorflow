@@ -272,7 +272,7 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 				try {
 					tfVersion = TensorFlowUtil.readNativeVersionFile(getRoot());
 					logService.warn("Could not load native TF library " + tfVersion + " " + e.getMessage());
-				} catch (IOException e1) {
+				} catch (final UnsatisfiedLinkError | IOException e1) {
 					logService.warn("Could not load native TF library (unknown version) " + e.getMessage());
 				}
 				// TODO maybe ask if the native lib should be deleted from /lib
