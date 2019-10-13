@@ -140,7 +140,9 @@ class DownloadableTensorFlowVersion extends TensorFlowVersion {
 		for(String part : split) {
 			orderableVersion += String.format("%03d%n", Integer.valueOf(part));
 		}
-		return orderableVersion;
+		String gpu = "";
+		if(supportsGPU.isPresent()) gpu += "_" + (supportsGPU.get() ? "cpu" : "gpu");
+		return orderableVersion + gpu;
 	}
 
 	void setCached(String localPath) {
