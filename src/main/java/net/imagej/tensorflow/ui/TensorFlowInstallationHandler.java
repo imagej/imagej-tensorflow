@@ -130,13 +130,14 @@ class TensorFlowInstallationHandler {
 			UnpackUtil.unZip(version.getLocalPath(), outputDir, logService, statusService);
 			TensorFlowUtil.writeNativeVersionFile(getRoot(), version.getPlatform(), version);
 		} else if (version.getLocalPath().endsWith(".tar.gz")) {
-			String symLinkOutputDir = TensorFlowUtil.getLibDir(getRoot()) + version.getPlatform() + File.separator;;
+			String symLinkOutputDir = TensorFlowUtil.getLibDir(getRoot()) + version.getPlatform() + File.separator;
 			UnpackUtil.unGZip(version.getLocalPath(), outputDir, symLinkOutputDir, logService, statusService);
 			TensorFlowUtil.writeNativeVersionFile(getRoot(), version.getPlatform(), version);
 		}
 
 		if (version.getLocalPath().endsWith(".jar")) {
-			// using default JAR version. nothing to do.
+			// using default JAR version.
+			TensorFlowUtil.removeNativeLibraries(getRoot(), logService);
 			logService.info("Using default JAR TensorFlow version.");
 		}
 
