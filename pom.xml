@@ -118,6 +118,7 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
 		<releaseProfiles>deploy-to-scijava</releaseProfiles>
 		<apache-commons-compress.version>1.18</apache-commons-compress.version>
+		<miglayout-swing.version>5.2</miglayout-swing.version>
 	</properties>
 
 	<repositories>
@@ -131,6 +132,12 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.miglayout</groupId>
+					<artifactId>miglayout</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.tensorflow</groupId>
@@ -150,6 +157,13 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 			<artifactId>commons-compress</artifactId>
 			<version>${apache-commons-compress.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.miglayout</groupId>
+			<artifactId>miglayout-swing</artifactId>
+			<version>${miglayout-swing.version}</version>
+		</dependency>
+
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
