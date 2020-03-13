@@ -76,6 +76,8 @@ public class AvailableTensorFlowVersions {
 		versions.add(version("linux64", "1.13.1", "GPU", "10.0", "7.4", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.13.1.tar.gz"));
 		versions.add(version("linux64", "1.14.0", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.14.0.tar.gz"));
 		versions.add(version("linux64", "1.14.0", "GPU", "10.0", ">= 7.4.1", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.14.0.tar.gz"));
+		versions.add(version("linux64", "1.15.0", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-linux-x86_64-1.15.0.tar.gz"));
+		versions.add(version("linux64", "1.15.0", "GPU", "10.1", ">= 7.5.1", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-linux-x86_64-1.15.0.tar.gz"));
 		//win64
 		versions.add(version("win64", "1.2.0", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.2.0.zip"));
 		versions.add(version("win64", "1.3.0", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.3.0.zip"));
@@ -93,6 +95,8 @@ public class AvailableTensorFlowVersions {
 		versions.add(version("win64", "1.13.1", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.13.1.zip"));
 		versions.add(version("win64", "1.14.0", "GPU", "10.0", ">= 7.4.1", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-windows-x86_64-1.14.0.zip"));
 		versions.add(version("win64", "1.14.0", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.14.0.zip"));
+		versions.add(version("win64", "1.15.0", "GPU", "10.1", ">= 7.5.1", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-gpu-windows-x86_64-1.15.0.zip"));
+		versions.add(version("win64", "1.15.0", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-windows-x86_64-1.15.0.zip"));
 		//macosx
 		versions.add(version("macosx", "1.2.0", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.2.0.tar.gz"));
 		versions.add(version("macosx", "1.3.0", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.3.0.tar.gz"));
@@ -107,6 +111,7 @@ public class AvailableTensorFlowVersions {
 		versions.add(version("macosx", "1.12.0", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.12.0.tar.gz"));
 		versions.add(version("macosx", "1.13.1", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.13.1.tar.gz"));
 		versions.add(version("macosx", "1.14.0", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.14.0.tar.gz"));
+		versions.add(version("macosx", "1.15.0", "CPU", "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow_jni-cpu-darwin-x86_64-1.15.0.tar.gz"));
 		return versions;
 	}
 
