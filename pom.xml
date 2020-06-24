@@ -120,6 +120,7 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 
 		<apache-commons-compress.version>1.18</apache-commons-compress.version>
 		<miglayout-swing.version>5.2</miglayout-swing.version>
+		<tensorflow.version>1.15.0</tensorflow.version>
 	</properties>
 
 	<repositories>
