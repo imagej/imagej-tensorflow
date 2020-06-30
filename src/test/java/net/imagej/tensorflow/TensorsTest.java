@@ -2,7 +2,7 @@
  * #%L
  * ImageJ/TensorFlow integration.
  * %%
- * Copyright (C) 2017 Board of Regents of the University of
+ * Copyright (C) 2017 - 2020 Board of Regents of the University of
  * Wisconsin-Madison and Google, Inc.
  * %%
  * Redistribution and use in source and binary forms, with or without
