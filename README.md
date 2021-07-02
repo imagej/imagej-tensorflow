@@ -1,4 +1,4 @@
-[![](https://travis-ci.org/imagej/imagej-tensorflow.svg)](https://travis-ci.org/imagej/imagej-tensorflow)
+[![](https://github.com/imagej/imagej-tensorflow/actions/workflows/build-main.yml/badge.svg)](https://github.com/imagej/imagej-tensorflow/actions/workflows/build-main.yml)
 
 # [ImageJ](https://imagej.net/) + [TensorFlow](https://www.tensorflow.org) integration layer
 

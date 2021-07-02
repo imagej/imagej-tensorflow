@@ -103,8 +103,8 @@
 		<url>https://github.com/imagej/imagej-tensorflow/issues</url>
 	</issueManagement>
 	<ciManagement>
-		<system>Travis CI</system>
-		<url>https://travis-ci.org/imagej/imagej-tensorflow</url>
+		<system>GitHub Actions</system>
+		<url>https://github.com/imagej/imagej-tensorflow/actions</url>
 	</ciManagement>
 
 	<properties>
@@ -116,7 +116,7 @@
 Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 
 		<!-- NB: Deploy releases to the SciJava Maven repository. -->
-		<releaseProfiles>deploy-to-scijava</releaseProfiles>
+		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<apache-commons-compress.version>1.18</apache-commons-compress.version>
 		<miglayout-swing.version>5.2</miglayout-swing.version>
