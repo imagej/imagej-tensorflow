@@ -140,7 +140,7 @@ public final class UnpackUtil {
 			final String name = entry.getName();
 			log("Unpacking " + name, log, status);
 			final File outFile = new File(output, name);
-			if (!outFile.toPath().normalize().startsWith(output.toPath())) {
+			if (!outFile.toPath().normalize().startsWith(output.toPath().normalize())) {
 				throw new RuntimeException("Bad zip entry");
 			}
 			if (entry.isDirectory()) {
