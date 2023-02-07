@@ -202,6 +202,33 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 		if (tfStatus.triedLoading())
 			return;
 
+		createCrashFile();
+
+		boolean error = true;
+		try {
+			tfStatus = loadFromLib();
+			if (!tfStatus.isFailed() && tfStatus.isLoaded()) {
+				error = false;
+			}
+		} catch (Exception e) {}
+
+		if (error) {
+			try {
+				tfStatus = loadFromJAR();
+				if (!tfStatus.isFailed() && tfStatus.isLoaded()) {
+					error = false;
+				}
+			} catch (Exception e) {}
+		}
+
+		if (!error) {
+			deleteCrashFile();
+		}
+
+		if(!tfStatus.isLoaded() && !tfStatus.isFailed()) {
+			tfStatus = TensorFlowLibraryStatus.failed("Could not find any TensorFlow library.");
+		}
+
 		// Handle a previous crash
 		boolean jniCrashed = false;
 		boolean jarCrashed = false;
@@ -223,29 +250,6 @@ public class DefaultTensorFlowService extends AbstractService implements TensorF
 				logService.warn("Please run Edit > Options > TensorFlow and choose another version or delete the crash file to load the JAR library again.");
 			}
 		}
-
-		if(!jarCrashed) {
-
-			createCrashFile();
-
-			if (jniCrashed) {
-				// jni crashed, ignore jni and load jar
-				tfStatus =  loadFromJAR();
-			} else {
-				tfStatus = loadFromLib();
-				if(!tfStatus.isFailed() && !tfStatus.isLoaded()) {
-					// no jni present, load jar
-					tfStatus = loadFromJAR();
-				}
-			}
-
-			deleteCrashFile();
-
-			if(!tfStatus.isLoaded() && !tfStatus.isFailed()) {
-				tfStatus = TensorFlowLibraryStatus.failed("Could not find any TensorFlow library.");
-			}
-		}
-
 	}
 
 	/**
