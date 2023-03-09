@@ -32,7 +32,7 @@
 		<developer>
 			<id>ctrueden</id>
 			<name>Curtis Rueden</name>
-			<url>https://imagej.net/User:Rueden</url>
+			<url>https://imagej.net/people/ctrueden</url>
 			<roles>
 				<role>founder</role>
 				<role>lead</role>
@@ -46,7 +46,7 @@
 		<developer>
 			<id>HedgehogCode</id>
 			<name>Benjamin Wilhelm</name>
-			<url>https://imagej.net/User:Bwilhelm</url>
+			<url>https://imagej.net/people/HedgehogCode</url>
 			<roles>
 				<role>developer</role>
 				<role>debugger</role>
@@ -58,7 +58,7 @@
 		<developer>
 			<id>frauzufall</id>
 			<name>Deborah Schmidt</name>
-			<url>https://imagej.net/User:Frauzufall</url>
+			<url>https://imagej.net/people/frauzufall</url>
 			<roles>
 				<role>developer</role>
 				<role>debugger</role>
@@ -80,7 +80,7 @@
 		</contributor>
 		<contributor>
 			<name>Christian Dietz</name>
-			<url>https://imagej.net/User:Dietzc</url>
+			<url>https://imagej.net/people/dietzc</url>
 			<properties><id>dietzc</id></properties>
 		</contributor>
 	</contributors>
