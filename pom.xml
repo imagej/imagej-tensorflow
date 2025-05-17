@@ -133,12 +133,6 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.miglayout</groupId>
-					<artifactId>miglayout</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
