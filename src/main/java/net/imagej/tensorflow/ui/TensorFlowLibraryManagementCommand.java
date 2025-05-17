@@ -34,7 +34,7 @@ import net.imagej.ImageJ;
 import net.imagej.tensorflow.TensorFlowService;
 import net.imagej.tensorflow.TensorFlowVersion;
 import net.imagej.tensorflow.util.TensorFlowUtil;
-import net.imagej.updater.util.UpdaterUtil;
+import net.imagej.updater.util.Platforms;
 import org.scijava.Context;
 import org.scijava.app.AppService;
 import org.scijava.command.Command;
@@ -72,7 +72,7 @@ public class TensorFlowLibraryManagementCommand implements Command {
 	DownloadableTensorFlowVersion currentVersion;
 	List<DownloadableTensorFlowVersion> availableVersions = new ArrayList<>();
 
-	String platform = UpdaterUtil.getPlatform();
+	String platform = Platforms.current();
 
 	private TensorFlowInstallationHandler installationHandler;
 

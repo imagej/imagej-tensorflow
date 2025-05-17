@@ -31,7 +31,7 @@
 package net.imagej.tensorflow.util;
 
 import net.imagej.tensorflow.TensorFlowVersion;
-import net.imagej.updater.util.UpdaterUtil;
+import net.imagej.updater.util.Platforms;
 import org.scijava.log.Logger;
 import org.tensorflow.TensorFlow;
 
@@ -60,7 +60,7 @@ public final class TensorFlowUtil {
 	private static final String LIBDIR = "lib";
 	private static final String UPDATEDIR = "update";
 
-	private static final String PLATFORM = UpdaterUtil.getPlatform();
+	private static final String PLATFORM = Platforms.current();
 
 	private static Pattern jarVersionPattern = Pattern.compile("(?<=(libtensorflow-)).*(?=(.jar))");
 
