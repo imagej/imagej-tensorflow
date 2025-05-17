@@ -129,6 +129,7 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 	</repositories>
 
 	<dependencies>
+		<!-- ImageJ2 dependencies -->
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
@@ -140,8 +141,24 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.tensorflow</groupId>
-			<artifactId>tensorflow</artifactId>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-common</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-updater</artifactId>
+		</dependency>
+
+		<!-- ImgLib2 dependencies -->
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2</artifactId>
+		</dependency>
+
+		<!-- SciJava dependencies -->
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-common</artifactId>
 		</dependency>
 		<dependency>
 			<!--
@@ -152,20 +169,36 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-io-http</artifactId>
 		</dependency>
+
+		<!-- TensorFlow dependencies -->
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-compress</artifactId>
+			<groupId>org.tensorflow</groupId>
+			<artifactId>libtensorflow</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.tensorflow</groupId>
+			<artifactId>tensorflow</artifactId>
 		</dependency>
 
+		<!-- Other dependencies -->
 		<dependency>
 			<groupId>com.miglayout</groupId>
 			<artifactId>miglayout-swing</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
 		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
