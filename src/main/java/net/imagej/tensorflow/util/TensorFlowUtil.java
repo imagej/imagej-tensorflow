@@ -30,6 +30,7 @@
 
 package net.imagej.tensorflow.util;
 
+import io.github.classgraph.ClassGraph;
 import net.imagej.tensorflow.TensorFlowVersion;
 import net.imagej.updater.util.Platforms;
 import org.scijava.log.Logger;
@@ -75,9 +76,12 @@ public final class TensorFlowUtil {
 		if(matcher.find()) {
 			// guess GPU support by looking for tensorflow_jni_gpu in the class path
 			boolean supportsGPU = false;
-			ClassLoader cl = ClassLoader.getSystemClassLoader();
-			for(URL url: ((URLClassLoader)cl).getURLs()){
-				if(url.getFile().contains("libtensorflow_jni_gpu")) {
+			ClassGraph cg = new ClassGraph();
+			String cp = cg.getClasspath();
+			String[] jars = cp.split(File.pathSeparator);
+
+			for(String j: jars){
+				if(j.contains("libtensorflow_jni_gpu")) {
 					supportsGPU = true;
 					break;
 				}

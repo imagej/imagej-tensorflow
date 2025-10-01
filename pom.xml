@@ -119,6 +119,7 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 		<releaseProfiles>sign,deploy-to-scijava</releaseProfiles>
 
 		<imagej-updater.version>2.0.0</imagej-updater.version>
+		<classgraph.version>4.8.172</classgraph.version>
 	</properties>
 
 	<repositories>
@@ -183,6 +184,12 @@ Wisconsin-Madison and Google, Inc.</license.copyrightOwners>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-compress</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>io.github.classgraph</groupId>
+			<artifactId>classgraph</artifactId>
+			<version>${classgraph.version}</version>
+		</dependency>
+
 
 		<!-- Test dependencies -->
 		<dependency>
