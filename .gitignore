@@ -3,5 +3,9 @@
 /target/
 # Eclipse metadata files.
 /.classpath
+/.factorypath
 /.project
 /.settings/
+
+# IntelliJ
+/.idea/
