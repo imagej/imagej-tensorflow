@@ -1,4 +1,4 @@
-[![](https://github.com/imagej/imagej-tensorflow/actions/workflows/build-main.yml/badge.svg)](https://github.com/imagej/imagej-tensorflow/actions/workflows/build-main.yml)
+[![Build Status](https://github.com/imagej/imagej-tensorflow/actions/workflows/build.yml/badge.svg)](https://github.com/imagej/imagej-tensorflow/actions/workflows/build.yml)
 
 # [ImageJ](https://imagej.net/) + [TensorFlow](https://www.tensorflow.org) integration layer
 
